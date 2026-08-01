@@ -1,6 +1,6 @@
 # The Orchestrate Intelligence Layer
 
-Eight skills for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.
+**18 skills** for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.
 
 ## A note on scope
 
@@ -8,10 +8,11 @@ This document was originally requested as 16 separate deliverables (research rep
 
 1. **This is one consolidated document, not sixteen.** The content those deliverables would have contained — research findings, the inferred judging model, dependency graph, roadmap — is here, organized by section. Splitting genuinely thin content across sixteen files would have optimized for the appearance of thoroughness over the substance of it.
 2. **There is no runtime orchestration engine, because a skill collection can't run one.** Skills are markdown files an agent reads — they have no process, no scheduler, no retry loop of their own. What actually orchestrates skill invocation is the coding agent itself (Claude Code, Cursor, etc.), deciding from skill *descriptions* which one fits the current moment. The "orchestration" here is therefore a **phase-gate skill** (`orchestrate-phase-gates`) that documents the correct sequence and hands off to the right specialist skill at each stage — the same pattern this repository's `mattpocock/skills` flow and Sentry's skill package already use successfully. It's real, it works, and it isn't pretending to be software it isn't.
+3. **On the "40 skills" ask, specifically:** a second research pass (below) found genuinely new, specific, quotable evidence — enough to responsibly expand from 8 to 18. It did not find evidence for 40 distinct categories. Padding to a round number by inventing categories the evidence doesn't support would fail the collection's own stated test ("would this become the repository people recommend") the moment anyone who's actually read the source material opens a skill and finds generic advice dressed up as a distinct discipline. 18 evidence-backed skills beats 40 diluted ones.
 
-## Research findings
+## Research findings — round one (four blog posts)
 
-Grounded in four HackerRank blog posts (full text pulled and read, not inferred): *Behind the Scenes of Orchestrate*, *How HackerRank Is Rebuilding Developer Hiring for the Agentic Era*, *How Chakra Scores an Interview*, and *Nobody Knows What a Good Engineer Looks Like Anymore*. The two specific challenge pages (`support-agent`, `multi-modal-review`) are behind HackerRank's login wall and were **not** accessible — nothing below claims to represent their exact per-challenge rubric, which may differ from the general framework below. Always defer to the actual challenge page for the event you're in.
+Grounded in four HackerRank blog posts (full text pulled and read, not inferred): *Behind the Scenes of Orchestrate*, *How HackerRank Is Rebuilding Developer Hiring for the Agentic Era*, *How Chakra Scores an Interview*, and *Nobody Knows What a Good Engineer Looks Like Anymore*.
 
 ### The scored surface (from HackerRank's own published breakdown of the May 2026 event)
 
@@ -42,7 +43,30 @@ Inferred from the above, not directly stated by HackerRank:
 - **Zero acknowledged limitations.** Reads as dishonest or unaware to an evidence-anchored interview scorer, independent of actual system quality.
 - **Both-extremes failure on adversarial handling.** The published dataset description (edge cases, prompt injection, jailbreaking) is explicitly built so escalate-everything and respond-to-everything both fail — meaning the scoring signal lives almost entirely in the calibrated middle.
 
+## Research findings — round two (official starter repos + organizer advice post)
+
+The May and June challenge pages themselves were login-gated and inaccessible in round one. A second pass found the **official public GitHub starter repositories** for both events (`interviewstreet/hackerrank-orchestrate-may26` and `-june26`), which mirror the actual challenge READMEs — real requirements, real constraints, real evaluation criteria, not paraphrase. It also found *"Getting better at Orchestrate,"* a direct organizer post naming specific mistakes and specific recommended practices. This is the strongest evidence tier in this document — direct quotes from HackerRank, not inference.
+
+**Directly quoted, hard requirements (support-agent / May challenge):**
+- Output schema: `status` (replied/escalated), `product_area`, `response`, `justification`, `request_type` (product_issue/feature_request/bug/invalid)
+- "Must be terminal-based," "must use only the provided support corpus," "must escalate high-risk, sensitive, or unsupported cases"
+- "Store secrets in environment variables only; never hardcode keys" — "Be deterministic; seed random sampling"
+- Submission = code zip + `output.csv` + AGENTS.md-format chat log at a fixed OS-specific path
+
+**Directly quoted, hard requirements (multi-modal-review / June challenge):**
+- Output schema: `evidence_standard_met`, `risk_flags`, `issue_type`, `object_part`, `claim_status` (supported/contradicted/not_enough_information), `claim_status_justification`, `supporting_image_ids`, `valid_image`, `severity`
+- Mandatory analysis: metrics against `sample_claims.csv`, **comparison of ≥2 strategies/prompts/configurations**, final approach documentation, **operational metrics** (model calls, token usage, image usage, cost, runtime, TPM/RPM)
+- "Must avoid hardcoded test labels or file-specific answers"
+
+**Directly quoted, named mistakes ("Getting better at Orchestrate"):** unclear architecture / single-LLM-call systems / hidden critical logic; poor naming ("helper," "utils"); hardcoded paths/secrets; silent failures (invalid output reaching final results); incomplete testing (successes only, no failure/edge inspection); inconsistent handling of similar cases without justification.
+
+**Directly quoted, named recommended practices:** separate concerns (input loading / prompts / agent logic / validation / evaluation); guardrails on LLM output (validate schema, reject unsupported labels, retry malformed); "log failed rows, continue safely when possible, mark uncertainty when responsible"; prompts written with code-level care (allowed outputs, required evidence, format requirements); clear README with entry point; justifications that reference specific evidence; interview prep that names specific tested edge cases and specific known limitations.
+
+This round-two evidence is what the 10 new skills below (`orchestrate-schema-guardrails` through `orchestrate-escalation-design`) are built directly from — each cites its specific source line in its own `SKILL.md`.
+
 ## The skill set
+
+**Core flow (round one, general four-signal framework):**
 
 | Skill | Owns | Fires |
 |---|---|---|
@@ -54,6 +78,21 @@ Inferred from the above, not directly stated by HackerRank:
 | `orchestrate-self-scoring` | Honest pre-submission self-audit | With meaningful time still left before deadline |
 | `orchestrate-interview-readiness` | Concrete-answer prep for the AI interview | Before the interview, ideally starting well before |
 | `orchestrate-submission-review` | Mechanical packaging correctness | Final 45–60 minutes, non-negotiable |
+
+**Tactical/implementation (round two, directly quoted requirements):**
+
+| Skill | Owns | Fires |
+|---|---|---|
+| `orchestrate-schema-guardrails` | Output validation, retry-on-malformed | Writing the model-response-to-CSV-row code path |
+| `orchestrate-failure-handling` | Per-row error handling, uncertainty marking | Writing the main processing loop |
+| `orchestrate-naming-and-structure` | File/module organization, descriptive naming | Scaffolding the project; before submission review |
+| `orchestrate-secrets-and-determinism` | Env-var secrets, seeded randomness | Writing config/setup code; pre-submission zip check |
+| `orchestrate-edge-case-testing` | Failure inspection, consistency checks | Before submission, after a working end-to-end run exists |
+| `orchestrate-prompt-engineering` | Prompt rigor, versioned prompt files | Writing/revising any system or task prompt |
+| `orchestrate-multi-strategy-evaluation` | ≥2-approach comparison, documented choice | Any nontrivial implementation decision point |
+| `orchestrate-cost-and-ops-metrics` | Call/token/cost/runtime tracking | Instrumenting the agent's model client |
+| `orchestrate-multimodal-evidence-grounding` | Image-to-claim reasoning (June challenge) | Building the multi-modal claim pipeline |
+| `orchestrate-escalation-design` | Calibrated, category-based escalation logic | Designing the escalate-vs-respond decision boundary |
 
 ## Dependency graph
 
@@ -101,11 +140,15 @@ There is no CI that can grade "is this justification specific enough" — that's
 
 `orchestrate-submission-review` is the human-readable version of this list; a project-specific test suite can automate the mechanical subset of it.
 
+## Scoring heuristic
+
+A separate document, [SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md), gives a rough self-assessment rubric across ten dimensions. It is explicitly **not** a reproduction of HackerRank's internal system — it's an evidence-informed heuristic for self-checking before submission, labeled as such throughout.
+
 ## Roadmap / future improvements
 
-- **A real scoring-estimator script** (not just a skill) that runs the mechanical validation checks above as an actual pre-commit or pre-submission hook, for projects that want a runnable artifact rather than a checklist. Scoped out of this pass per an explicit choice to keep this collection honest about what static skills can and can't do — flagged here as the natural next increment if wanted.
-- **Per-challenge rubric skills** once a specific Orchestrate challenge's exact page content is available (the current skills are deliberately general to the four-signal framework, since the specific challenge pages weren't accessible during this research pass).
+- **A real scoring-estimator script** (not just a skill) that runs the mechanical validation checks above as an actual pre-commit or pre-submission hook, for projects that want a runnable artifact rather than a checklist. Still scoped out — flagged here as the natural next increment.
 - **A post-event skill** for turning an Orchestrate submission into a portfolio artifact / blog writeup, since the underlying practices (justification discipline, transcript hygiene, architecture clarity) are reusable well beyond the contest.
+- **A third research pass once a fresh Orchestrate event runs** — challenge specifics (schema fields, domain) change between events (support triage in May, multi-modal claims in June); the *pattern* of what's rewarded has been stable across both, which is what this collection is built around, but a new event may surface new specifics worth a new tactical skill.
 
 ## Beyond the contest
 
