@@ -58,6 +58,16 @@ Don't rehearse polish; rehearse specificity under pressure:
 3. Say the answer out loud once, timed. If it comes out generic, you haven't found your specific evidence yet — go back to step 2.
 4. Specifically rehearse the limitations question. It's the one people skip prepping and it's explicitly scored.
 
+## Answer delivery, not just answer content
+
+**Added source**: *The Engineer's Notebook* names a specific delivery structure: *"Start with the direct answer, add one concrete detail, tie it back to the task, and then stop."* This is distinct from (and sits on top of) the four-part claim/evidence/reasoning/caveat structure above — it's about not burying the concrete claim under a long windup, and about stopping once you've answered rather than continuing until you talk yourself into a vaguer, hedgier place. A live voice interview punishes rambling in a way a written justification doesn't: the scorer is anchoring to the clearest moment in your answer, and a strong opening claim followed by unnecessary elaboration risks diluting it.
+
+## Mock-interview drilling, not just answer-writing
+
+**Added source**: a first-hand #1-ranked participant case study (Medium, "How I went from 122 to 1 in 24 hours") credits full mock interview sessions — with an AI playing the judge role, drilling specific architectural tradeoffs and concrete failure cases rather than rehearsing a generic project pitch — as part of what produced a 25.2/30 interview score. The same account reports the interview score outweighed the code score in their final ranking, reinforcing that live delivery practice under pressure, not just having the right answers written down, is worth the time investment. This is one credited case study, not organizer guidance — treat it as a strong practical suggestion, not a published requirement.
+
+**Practical version**: after building your answer bank (below), don't stop at writing the answers — run at least one full timed mock session out loud, ideally with something (another AI session, a friend, even a recording of yourself) pushing back and asking follow-ups, specifically on your stated tradeoffs and limitations. The gap between "I know this" and "I can say this clearly under live follow-up questioning" is exactly what a dry run catches.
+
 ## What not to do
 
 - **Don't memorize a script.** A rehearsed-sounding answer to an unexpected question angle reads worse than an honest, structured-on-the-fly answer. Rehearse the *method* (claim → evidence → reasoning → caveat), not word-for-word text.

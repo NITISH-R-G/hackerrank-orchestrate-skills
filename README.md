@@ -1,6 +1,6 @@
 # HackerRank Orchestrate Skills
 
-**18 free AI agent skills for HackerRank Orchestrate — evidence-cited line by line from HackerRank's published methodology *and* the official starter repositories for the May and June 2026 events.** Drop them into Claude Code, Cursor, Codex, or any agent that supports the [Agent Skills](https://agentskills.io) standard, and they trigger automatically while you build — no slash commands, nothing to remember.
+**21 free AI agent skills for HackerRank Orchestrate — evidence-cited line by line from HackerRank's published methodology, the official starter repositories for the May and June 2026 events, an independent engineering analysis, and a first-hand #1-ranked participant case study.** Drop them into Claude Code, Cursor, Codex, or any agent that supports the [Agent Skills](https://agentskills.io) standard, and they trigger automatically while you build — no slash commands, nothing to remember.
 
 If you're competing in HackerRank Orchestrate (or prepping for one), this repo exists so you don't lose points to things that have nothing to do with your agent's actual quality — an unread rubric, an unscoreable justification, an interview answer that's true but too vague to score.
 
@@ -25,7 +25,11 @@ Full research writeup, with sourcing for every claim: **[RESEARCH.md](./RESEARCH
 
 The first version was built from four HackerRank blog posts. This version adds a second research pass that found the **official public GitHub starter repositories** for both events (`interviewstreet/hackerrank-orchestrate-may26` and `-june26`) and a direct organizer post, *"Getting better at Orchestrate,"* naming specific mistakes and practices. That's direct-quote evidence, not inference — and it's why this version has 10 new tactical skills, not a round-number expansion. Every skill states its evidence tier; nothing here claims access to HackerRank's actual internal scoring.
 
-## The 18 skills
+## What's new in this version
+
+A third research pass studied *The Engineer's Notebook* (an independent engineering Substack) and a first-hand #1-ranked participant's writeup ("How I went from 122 to 1 in 24 hours"). This added 3 new skills — `orchestrate-input-tracing`, `orchestrate-input-validation-and-overrides`, `orchestrate-checkpoint-resilience` — and meaningfully strengthened 3 existing ones (a Plan/Build/Review transcript structure, a specific interview-delivery technique plus mock-drilling practice, and a single-agent-vs-multi-agent architecture lesson). These sources are clearly labeled as secondary evidence (an independent author's analysis, one participant's account) — distinct from the primary-source tiers (official blog, official starter repo) elsewhere in this collection. Full sourcing: [RESEARCH.md](./RESEARCH.md).
+
+## The 21 skills
 
 **Core flow** — the general four-signal framework, stable across events:
 
@@ -54,6 +58,14 @@ The first version was built from four HackerRank blog posts. This version adds a
 | [`orchestrate-cost-and-ops-metrics`](./skills/orchestrate-cost-and-ops-metrics) | Track model calls, tokens, cost, runtime, rate limits | June (multi-modal) challenge, required |
 | [`orchestrate-multimodal-evidence-grounding`](./skills/orchestrate-multimodal-evidence-grounding) | Image-to-claim reasoning: supported/contradicted/insufficient-info, per-image citation | June (multi-modal) challenge schema |
 | [`orchestrate-escalation-design`](./skills/orchestrate-escalation-design) | Calibrated, category-based escalation — not one global confidence threshold | Official starter repo + dataset design |
+
+**Design & resilience** — from an independent analysis and a #1-ranked participant's case study:
+
+| Skill | What it does | Source |
+|---|---|---|
+| [`orchestrate-input-tracing`](./skills/orchestrate-input-tracing) | Trace one input through every pipeline stage to verify the architecture is real, not just drawn | The Engineer's Notebook |
+| [`orchestrate-input-validation-and-overrides`](./skills/orchestrate-input-validation-and-overrides) | Validate inputs *before* model calls; use confidence-gated (not binary) safety overrides | The Engineer's Notebook + #1-ranked case study |
+| [`orchestrate-checkpoint-resilience`](./skills/orchestrate-checkpoint-resilience) | Checkpoint-and-resume so a rate limit mid-run doesn't force full reprocessing | #1-ranked case study |
 
 ## Install
 

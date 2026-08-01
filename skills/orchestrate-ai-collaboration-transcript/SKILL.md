@@ -56,6 +56,16 @@ Concretely: pause before sending a request and ask "if someone read only this me
 - **Don't perform for the transcript at the expense of actually building.** A transcript full of eloquent planning attached to a broken agent scores badly everywhere else — this is 10% of the score, not the whole thing. See `orchestrate-phase-gates` for time allocation.
 - **Don't over-explain trivial requests.** Constraint-stating and reasoning are for decisions that matter. "Fix this typo" doesn't need a paragraph. Reserve the discipline for moments where judgment is actually being exercised.
 
+## Structure the transcript in three explicit phases
+
+**Added source**: *The Engineer's Notebook*, "Getting better at HackerRank Orchestrate," describes a specific three-phase structure for the AGENTS.md-format transcript that goes beyond "make reasoning visible" — it names the phases:
+
+1. **Plan** — demonstrate problem understanding *before* implementation starts: what the system reads, what it produces, where reasoning happens, and the error-handling strategy, stated up front.
+2. **Build** — use technical specificity throughout: name actual files, functions, schemas, thresholds, and retrieval mechanisms as you go, not generic descriptions of what you're doing.
+3. **Review** — treat your own output behavior as a code review: document the iteration cycles where you investigated a failure and improved the system because of it, not just the improvement itself.
+
+This is a stronger, more checkable version of "make planning/constraints/debugging/iteration visible" from the section above — if you're not sure how to structure a transcript, structuring it as Plan → Build → Review sections (even just as headers in your own working notes as you go) gives the four disciplines above a concrete home instead of leaving them as things to remember to do.
+
 ## Beyond the contest
 
 This is, without qualification, just how effective AI-assisted engineering works — the entire premise of `grill-with-docs`, `grilling`, and `writing-plans` elsewhere in this collection is that making planning and reasoning explicit produces better outcomes, independent of whether anyone is grading the transcript. Orchestrate scores a skill worth having regardless.

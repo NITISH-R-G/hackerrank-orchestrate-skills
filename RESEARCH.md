@@ -1,6 +1,6 @@
 # The Orchestrate Intelligence Layer
 
-**18 skills** for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.
+**21 skills** for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.
 
 ## A note on scope
 
@@ -139,6 +139,26 @@ There is no CI that can grade "is this justification specific enough" — that's
 - Every output row has a non-null value in every required column
 
 `orchestrate-submission-review` is the human-readable version of this list; a project-specific test suite can automate the mechanical subset of it.
+
+## Research findings — round three (The Engineer's Notebook + a first-hand case study)
+
+A third pass studied *The Engineer's Notebook* (Shloka Shah's Substack), specifically "Getting better at HackerRank Orchestrate," plus one of its three linked developer case studies. **Honesty notes on this round**: the site's root/archive page listed no article index reachable without search, so "every relevant subpage" wasn't literally navigable — only the one primary post and its explicit outbound links were available to follow. Of the three linked case studies, only the highest-signal one (a #1-ranked finisher's writeup) was fetched and read; the other two (`saai.syvendra.com`, a second Medium post by `swayam-mishra`) are cited as pointers only — their content is **not** represented anywhere in this document, to avoid fabricating what wasn't actually read.
+
+**Directly quoted / clearly evidenced, from the Substack article (an independent author's analysis, not an official HackerRank source — treated as strong secondary evidence, distinct from the primary-source tiers above):**
+- The self-check framework of tracing one input through every architectural stage to verify the separation of concerns is real, not just diagrammed
+- Input validation *before* model calls, as a distinct discipline from output validation after
+- "Rule-based overrides for cases where model discretion shouldn't apply" as deliberate design, not a fallback of last resort
+- A specific three-phase AGENTS.md transcript structure: **Plan** (problem understanding before implementation) → **Build** (technical specificity) → **Review** (treating your own output behavior as code review)
+- A specific interview-answer delivery structure: "start with the direct answer, add one concrete detail, tie it back to the task, and then stop"
+- The evaluation-loop framing: reliability comes from "someone looked at the failures and made the system less fragile," not from a perfect first prompt
+
+**From one credited, first-hand participant case study (a #1-ranked finisher, "How I went from 122 to 1 in 24 hours") — explicitly labeled as one person's account, not organizer guidance:**
+- Single-agent-with-tools outperformed a multi-agent split for cross-image reasoning, because the multi-agent handoff lost signal at the summarization boundary
+- Conditional, confidence-gated safety overrides (fire only when the model can't cite specific evidence) outperformed a binary safety flag (fire on any low-confidence signal), which was producing false positives on legitimate findings
+- Checkpoint-and-resume processing turned an API-rate-limit hit from "reprocess everything" into "resume exactly where it stopped"
+- Mock interview drilling with an AI playing the judge, focused on defending specific tradeoffs, was credited alongside a reported finding that interview score outweighed code score in this participant's final rank
+
+This round produced 3 new skills (`orchestrate-input-tracing`, `orchestrate-input-validation-and-overrides`, `orchestrate-checkpoint-resilience`) and meaningful additions to 3 existing skills (`orchestrate-ai-collaboration-transcript`, `orchestrate-interview-readiness`, `orchestrate-agent-architecture`) rather than duplicating what those skills already covered.
 
 ## Scoring heuristic
 
