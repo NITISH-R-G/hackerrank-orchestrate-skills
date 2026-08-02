@@ -1,4 +1,6 @@
-.DS_Store
-Thumbs.db
-node_modules/
-*.log
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/

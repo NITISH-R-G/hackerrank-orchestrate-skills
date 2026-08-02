@@ -1,163 +1,410 @@
-# HackerRank Orchestrate Skills
+# orchestrate-kit
 
-**34 free AI agent skills, a working repo evaluator, and a full AI-judge prep package for HackerRank Orchestrate — evidence-cited line by line from HackerRank's published methodology, the official starter repositories for the May and June 2026 events, an independent engineering analysis, and a first-hand #1-ranked participant case study.** Drop them into Claude Code, Cursor, Codex, or any agent that supports the [Agent Skills](https://agentskills.io) standard, and they trigger automatically while you build — no slash commands, nothing to remember.
+**Software for building AI systems you can defend.** An evaluator, an
+institutional memory that remembers what you already measured and rejected, a
+mentor that costs a change before you write it, and an interview simulator that
+cross-examines you.
 
-If you're competing in HackerRank Orchestrate (or prepping for one), this repo exists so you don't lose points to things that have nothing to do with your agent's actual quality — an unread rubric, an unscoreable justification, an interview answer that's true but too vague to score.
-
----
-
-## The rubric these skills are built against
-
-HackerRank has published exactly how Orchestrate scores a submission. Most participants never read this before they start building. That alone is a real edge:
-
-| Artifact | Weight | What it actually measures |
-|---|---|---|
-| **Code zip** | 30% | Agent design, architecture, tool integration, prompt quality, robustness — explicitly, *"actual agent loops versus hardcoded workflows"* |
-| **Output CSV** | 30% | Correctness against a golden dataset, **and whether each decision has a sound justification** |
-| **AI chat transcript** | 10% | How you *directed* your AI coding tools — planning, constraints, debugging, iteration |
-| **AI judge interview** | 30% | Technical depth, communication, and explicitly, **self-awareness about your own system's limitations** |
-
-Published finding from HackerRank's own post-mortem: **"No single metric reproduces the leaderboard."** The winners weren't the best coders — they were balanced across all four signals.
-
-Full research writeup, with sourcing for every claim: **[RESEARCH.md](./RESEARCH.md)** · Self-scoring rubric: **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ](./FAQ.md)**
-
----
-
-## v4 — the audit tier
-
-Everything above came from *reading about* Orchestrate. v4 comes from **building a
-complete August 2026 submission and auditing it to destruction**: 48 logged defects
-(F-1…F-48), 9 measured-and-rejected optimisations, 17 certification scripts, and one
-completed AI-judge interview.
-
-That is a new evidence tier, and it is labelled as such in every v4 skill. It is *not*
-access to HackerRank's internal scoring, and nothing here claims to be.
-
-| Deliverable | What it is |
-|---|---|
-| **[PLAYBOOK.md](./PLAYBOOK.md)** | 20 rules for building AI systems whose correctness you can prove |
-| **[TIMELINE.md](./TIMELINE.md)** | The real F-1…F-48 history — including three audits that were themselves wrong |
-| **[JUDGE-PREP.md](./JUDGE-PREP.md)** | Topics the judge actually probed, verbatim feedback, model answers, and 10 claims never to make |
-| **[RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md)** | Final gate, ordered so the cheapest checks catch the worst defects |
-| **[tools/](./tools)** | `aiev` — a working evaluator you point at a repo |
+Plus 34 [Agent Skills](https://agentskills.io) and the full written methodology.
 
 ```bash
-python -m aiev evaluate /path/to/your/orchestrate-repo --markdown report.md
+pip install -e .
+orchestrate memory seed
+orchestrate mentor "I want to add OCR"
 ```
 
-### The 13 v4 skills
+Zero runtime dependencies. No API key. Everything runs offline.
 
-| Skill | Answers |
+---
+
+## Why this exists
+
+Most engineering tooling answers *"did the tests pass?"*
+
+This answers the questions that actually decide whether you ship:
+
+| Question | Command |
 |---|---|
-| [`orchestrate-spec-auditor`](./skills/orchestrate-spec-auditor) | Does it match the spec *literally*? |
-| [`orchestrate-submission-validator`](./skills/orchestrate-submission-validator) | Are all three artifacts current and consistent? |
-| [`orchestrate-multimodal-auditor`](./skills/orchestrate-multimodal-auditor) | Does media actually change a decision? |
-| [`orchestrate-dataset-coupling-auditor`](./skills/orchestrate-dataset-coupling-auditor) | Will it survive data I have not seen? |
-| [`orchestrate-determinism-auditor`](./skills/orchestrate-determinism-auditor) | Is it reproducible, and where does that stop? |
-| [`orchestrate-security-auditor`](./skills/orchestrate-security-auditor) | Does every hostile input yield a valid row? |
-| [`orchestrate-confidence-calibrator`](./skills/orchestrate-confidence-calibrator) | Am I calibrating to the labels or to a textbook? |
-| [`orchestrate-evidence-retrieval-expert`](./skills/orchestrate-evidence-retrieval-expert) | Is a retrieval gain even possible? |
-| [`orchestrate-rule-engine-architect`](./skills/orchestrate-rule-engine-architect) | Rules or an LLM — and is any rule dead? |
-| [`orchestrate-interview-coach`](./skills/orchestrate-interview-coach) | Do I own every number in my code? |
-| [`orchestrate-release-engineer`](./skills/orchestrate-release-engineer) | Does it work on someone else's machine? |
-| [`orchestrate-mentor`](./skills/orchestrate-mentor) | Should I make this change **before** I make it? |
-| [`orchestrate-evaluator`](./skills/orchestrate-evaluator) | Am I moving toward Rank 1? |
+| If I ship today, what evidence says I'm better? | `orchestrate evaluate <repo>` |
+| Should I build this at all? | `orchestrate mentor "add embeddings"` |
+| Why *didn't* we do X? | `orchestrate memory why-not "embeddings"` |
+| Can I survive being asked about it? | `orchestrate interview --difficulty hard` |
+| Is this actually releasable? | `orchestrate release <repo>` |
 
-### Three things worth taking even if you read nothing else
+One rule runs through all of it: **nothing states a number it did not measure.**
+Where a measurement is absent the tools print `UNKNOWN` and hand you the
+experiment that would resolve it.
 
-**Prove the counterfactual.** To claim a component drives an outcome, disable it and
-show the outcome *stops*. "It works with OCR on" is compatible with OCR being
-decorative.
+---
 
-**Rejection is a deliverable.** "We use embeddings" is a claim anyone can make. "We
-measured embeddings at F1 0.479 against 0.512 and did not ship them" cannot be faked —
-and a real judge praised exactly this: *"measuring your own assumptions and being
-willing to reject changes that didn't improve things."*
+## The four systems
 
-**Attack your own measurement.** Three audits in the reference build were wrong, and
-each produced a clean, confirming result. Two would have shipped a false conclusion.
+### 1. Engineering Memory — `orchestrate memory`
 
-## What's new in this version
+A commit log records what happened. It cannot record what you *considered*.
 
-The first version was built from four HackerRank blog posts. This version adds a second research pass that found the **official public GitHub starter repositories** for both events (`interviewstreet/hackerrank-orchestrate-may26` and `-june26`) and a direct organizer post, *"Getting better at Orchestrate,"* naming specific mistakes and practices. That's direct-quote evidence, not inference — and it's why this version has 10 new tactical skills, not a round-number expansion. Every skill states its evidence tier; nothing here claims access to HackerRank's actual internal scoring.
+```
+$ orchestrate memory why-not "embeddings"
 
-## What's new in this version
+D-dense-retrieval  Dense embeddings / RRF / cross-encoder   [rejected]
+  because : the relation being scored is topical word OVERLAP, not paraphrase
+  measured: evidence F1: 0.479 vs 0.512 (baseline)  [n=28 labeled]
+  measured: configs dominating the shipped one on all 6 metrics: 0  [n=153]
+  variants: dense MiniLM; reciprocal rank fusion; cross-encoder rerank; MMR
+  RECONSIDER IF: the evidence relation becomes paraphrase-based -- graded
+            evidence sharing NO tokens with the query. Measure token overlap
+            between query and gold; if median drops below 2 terms, re-open.
+  lesson  : Benchmark the fashionable option. Publish the number when it loses.
+```
 
-A third research pass studied *The Engineer's Notebook* (an independent engineering Substack) and a first-hand #1-ranked participant's writeup ("How I went from 122 to 1 in 24 hours"). This added 3 new skills — `orchestrate-input-tracing`, `orchestrate-input-validation-and-overrides`, `orchestrate-checkpoint-resilience` — and meaningfully strengthened 3 existing ones (a Plan/Build/Review transcript structure, a specific interview-delivery technique plus mock-drilling practice, and a single-agent-vs-multi-agent architecture lesson). These sources are clearly labeled as secondary evidence (an independent author's analysis, one participant's account) — distinct from the primary-source tiers (official blog, official starter repo) elsewhere in this collection. Full sourcing: [RESEARCH.md](./RESEARCH.md).
+**40 entries, 9 of them measured rejections.** Every rejection carries a
+`reconsider_if`, and this is enforced — `memory add --status rejected` without
+one is refused:
 
-## The 21 skills
+> *a rejection without `--reconsider-if` is a prejudice, not a decision.*
 
-**Core flow** — the general four-signal framework, stable across events:
+A rejection with no reconsideration condition tells the next engineer "no"
+without telling them what would change the answer. That is how a good idea
+stays dead for the wrong reason.
 
-| Skill | What it does | When it fires |
+Storage is a single JSON file. Commit it, diff it, review it in a PR.
+
+### 2. The Mentor — `orchestrate mentor`
+
+Accepts a proposal in plain English and answers eight questions before you
+write any code.
+
+```
+$ orchestrate mentor "I want to add OCR"
+
+1. WHAT KIND OF CHANGE IS THIS
+   [add-model] Add or enable a model-based component
+   The question to answer before writing any code:
+     > How many rows can this component possibly fix? Count them first.
+
+2. WHAT HAS BEEN TRIED BEFORE
+   [shipped ] F-20-ocr-wrong-conclusion  'The images carry no signal' was a
+              conclusion about two vendors
+        measured: characters extracted: 0 -> 10,104  [n=20 images]
+        blast radius: 0 of 110 output rows changed -- the channel is live and
+                      redundant on THIS corpus
+   [shipped ] F-48-ocr-cost  Local OCR cost 0.25s -> 45s, heap 7 MB -> 500 MB
+   [REJECTED] D-visual-model  A visual model beyond OCR
+        RECONSIDER IF: rows appear where message_text is empty AND the image
+                       is not text-bearing
+
+3. EXPECTED GAIN   ...
+4. RISK REGISTER (6)   ...
+5. BLAST RADIUS -- how to measure it, not what it is
+6. EVALUATION PLAN -- run these, in this order
+7. REGRESSION RISK
+8. RELEASE RECOMMENDATION:  PROCEED-WITH-MEASUREMENT
+```
+
+Ten proposal classes (`add-model`, `swap-retrieval`, `tune`, `add-rule`,
+`llm-decision`, `perf`, `confidence`, `personalize`, `refactor`, `test`), each
+contributing a risk register and a required-evidence list.
+
+**It refuses to predict your gain.** With no prior art it prints `UNKNOWN`:
+
+> *No measurement exists. This tool will not estimate one — a predicted gain
+> with no experiment behind it is the exact failure mode this framework exists
+> to prevent.*
+
+Blocking is deliberately narrow. `use dense embeddings` is blocked;
+`add OCR` is not, because *"a visual model beyond OCR"* is a neighbour, not the
+same proposal. Adjacent rejections are shown, not enforced. It also finds
+rejections nested inside *accepted* entries — `tune the BM25 k1 parameter` is
+blocked by the entry that shipped BM25 and rejected tuning it, which a status
+filter alone cannot see.
+
+### 3. The Judge — `orchestrate interview`
+
+An adaptive simulator, not a question list.
+
+```bash
+orchestrate interview --persona skeptic --difficulty hard
+orchestrate interview --panel --learn      # 4 judges, coaching after each answer
+orchestrate interview --topics retrieval determinism -n 12
+```
+
+- **4 personas** who disagree with each other. The Architect wants the
+  alternative you rejected; the Skeptic wants provenance for every number; the
+  Security Reviewer wants trust boundaries; the Practitioner wants to know what
+  breaks at 3am.
+- **4 difficulty levels**, from `warmup` to `adversarial` (pass mark 55 → 78).
+- **Adaptive**: the next question comes from your *weakest* dimension, and the
+  level rises when you do well. Answer vaguely about retrieval and you get more
+  retrieval, harder.
+- **Cross-examination** fires for a named reason, not at random:
+
+  > *"You gave me a number. Where did it come from — did you measure it, or is
+  > that a recollection?"*
+  > *"You said `fully deterministic`. Give me the boundary."*
+
+- **Session memory.** Claim determinism in question 2, mention a hosted API in
+  question 7, and the judge brings it back: *"Which is it, and where exactly is
+  the boundary?"*
+- **Weakness detection** names the habit and quotes the answer that showed it —
+  `Guarantees with no boundary`, `Claims without provenance`,
+  `Never said "I don't know"`.
+
+Scoring runs on five dimensions: specificity, evidence, boundaries,
+alternatives, honesty — weighted per persona.
+
+**Stated limitation, not hidden:** this scores the *shape* of an answer. It
+cannot know whether your F1 was really 0.512. A fluent answer full of invented
+numbers scores well here and fails in the room. It trains form; truth is your
+job.
+
+### 4. The Evaluator — `orchestrate evaluate | certify | release`
+
+Black-box first: it clones, runs commands, reads files, diffs artifacts. The
+core knows nothing about your domain — everything specific lives in a plugin.
+
+```
+$ orchestrate evaluate ../my-submission
+
+DO NOT SHIP   score 49/100   [generic, hackerrank-orchestrate]
+
+   determinism      ########## 100  (1 audits, 0 findings)
+   specification    ########## 100  (1 audits, 0 findings)
+ ! release          ..........   0  (2 audits, 1 findings)
+   testing          #######...  75  (1 audits, 1 findings)
+
+BLOCKERS:
+  - dataset/output.csv is STALE
+```
+
+Three verbs, three different questions:
+
+| verb | asks | exit |
 |---|---|---|
-| [`orchestrate-phase-gates`](./skills/orchestrate-phase-gates) | The master sequencer — time allocation across all 4 signals, gate order | Start of the challenge |
-| [`orchestrate-agent-architecture`](./skills/orchestrate-agent-architecture) | Real agent loops vs. hardcoded workflows, tool design, prompt structure | Design & implementation |
-| [`orchestrate-robustness`](./skills/orchestrate-robustness) | Prompt injection, jailbreak attempts, edge-case calibration | Before writing input handling |
-| [`orchestrate-justification-quality`](./skills/orchestrate-justification-quality) | Evidence-anchored reasoning for every agent decision | Writing/reviewing your CSV output |
-| [`orchestrate-ai-collaboration-transcript`](./skills/orchestrate-ai-collaboration-transcript) | Prompting so your chat transcript itself scores well | Continuously, the whole session |
-| [`orchestrate-self-scoring`](./skills/orchestrate-self-scoring) | Honest pre-submission audit against all 4 signals | With time left before deadline |
-| [`orchestrate-interview-readiness`](./skills/orchestrate-interview-readiness) | Concrete-answer prep for the AI judge interview | Before your interview |
-| [`orchestrate-submission-review`](./skills/orchestrate-submission-review) | Final packaging checklist | Final 45–60 minutes |
+| `evaluate` | is this shippable? | `2` on any blocker |
+| `certify` | is this *clean*? any finding above INFO fails | `3` on non-blocking findings |
+| `release` | is this submittable? adds gates + manual items | `2` on gate failure |
 
-**Tactical** — directly quoted from the official starter repos and organizer advice post:
+Every finding carries the literal command output plus a confidence label —
+`measured` / `observed` / `inferred` / `unknown`. Inferred findings are
+discounted. **A skipped audit is reported as UNKNOWN, never as a pass.**
 
-| Skill | What it does | Source |
-|---|---|---|
-| [`orchestrate-schema-guardrails`](./skills/orchestrate-schema-guardrails) | Validate model output against schema, reject bad enum values, retry malformed responses | "Getting better at Orchestrate" |
-| [`orchestrate-failure-handling`](./skills/orchestrate-failure-handling) | Per-row error handling, logging, and explicit uncertainty-marking | "Getting better at Orchestrate" |
-| [`orchestrate-naming-and-structure`](./skills/orchestrate-naming-and-structure) | Separate concerns, no `helper.py`/`utils.js` | "Getting better at Orchestrate" |
-| [`orchestrate-secrets-and-determinism`](./skills/orchestrate-secrets-and-determinism) | Env-var-only secrets, seeded randomness, no local paths | Official starter repo |
-| [`orchestrate-edge-case-testing`](./skills/orchestrate-edge-case-testing) | Inspect failures not just successes; catch inconsistent handling of similar cases | "Getting better at Orchestrate" |
-| [`orchestrate-prompt-engineering`](./skills/orchestrate-prompt-engineering) | Write prompts with code-level rigor — allowed outputs, required evidence, format specs | "Getting better at Orchestrate" |
-| [`orchestrate-multi-strategy-evaluation`](./skills/orchestrate-multi-strategy-evaluation) | Compare ≥2 approaches against the sample dataset, document the reasoning | June (multi-modal) challenge, required |
-| [`orchestrate-cost-and-ops-metrics`](./skills/orchestrate-cost-and-ops-metrics) | Track model calls, tokens, cost, runtime, rate limits | June (multi-modal) challenge, required |
-| [`orchestrate-multimodal-evidence-grounding`](./skills/orchestrate-multimodal-evidence-grounding) | Image-to-claim reasoning: supported/contradicted/insufficient-info, per-image citation | June (multi-modal) challenge schema |
-| [`orchestrate-escalation-design`](./skills/orchestrate-escalation-design) | Calibrated, category-based escalation — not one global confidence threshold | Official starter repo + dataset design |
+Blockers print *above* the score, because an average that lets fourteen passes
+outvote one release blocker is worse than no score at all.
 
-**Design & resilience** — from an independent analysis and a #1-ranked participant's case study:
+`release` ends with the items no tool can check, including the one that matters
+most:
 
-| Skill | What it does | Source |
-|---|---|---|
-| [`orchestrate-input-tracing`](./skills/orchestrate-input-tracing) | Trace one input through every pipeline stage to verify the architecture is real, not just drawn | The Engineer's Notebook |
-| [`orchestrate-input-validation-and-overrides`](./skills/orchestrate-input-validation-and-overrides) | Validate inputs *before* model calls; use confidence-gated (not binary) safety overrides | The Engineer's Notebook + #1-ranked case study |
-| [`orchestrate-checkpoint-resilience`](./skills/orchestrate-checkpoint-resilience) | Checkpoint-and-resume so a rate limit mid-run doesn't force full reprocessing | #1-ranked case study |
+> `[ ] Make the authorship attestation yourself. No tool may make it for you.`
+
+### 5. Diagrams — `orchestrate viz`
+
+Nine generated Mermaid diagrams. Generated, never hand-drawn: a hand-drawn
+architecture diagram is a *claim* about the code, a generated one is a
+projection of it.
+
+```bash
+orchestrate viz all --out diagrams/
+orchestrate graph --focus retrieval > decisions.mmd
+orchestrate graph --timeline
+```
+
+`architecture` (trust-coloured) · `trust` · `evaluation` · `rules` · `audit` ·
+`regression` · `submission` · `decisions` · `timeline`
+
+The decision graph renders **rejected branches as first-class nodes** beside
+the chosen one — precisely what `git log` cannot show.
+
+---
 
 ## Install
 
-**Everything:**
 ```bash
 git clone https://github.com/NITISH-R-G/hackerrank-orchestrate-skills.git
-cp -r hackerrank-orchestrate-skills/skills/* your-project/.claude/skills/
+cd hackerrank-orchestrate-skills
+pip install -e ".[dev]"
+orchestrate memory seed
+python -m pytest        # 48 tests
 ```
 
-**One skill:**
-```bash
-cp -r hackerrank-orchestrate-skills/skills/orchestrate-robustness your-project/.claude/skills/
+Or run without installing: `python -m orchestrate_kit <command>`.
+
+## Writing a plugin
+
+```python
+class MyPlugin:
+    name, description = "rag", "Retrieval-augmented generation"
+
+    def detect(self, ctx) -> bool:          # detect on SHAPE, never on repo name
+        return ctx.exists("eval/questions.jsonl")
+
+    def audits(self):
+        return [SimpleAudit("retrieval-ablation", "retrieval", my_audit)]
 ```
 
-Works with Claude Code, Cursor, Codex, Antigravity, Cline, Gemini CLI, and every other agent that reads `SKILL.md` files — the format is an open standard, not tied to one tool. Skills trigger automatically based on their description; nothing to invoke manually.
+An audit gets a `RepoContext` (run commands, read files, glob) and returns an
+`AuditResult`. **It must never raise** — a crash is reported as a finding, not
+swallowed.
 
-## Why these and not a generic prompt-engineering list
+## Does it actually detect anything?
 
-Every other resource you'll find for a hackathon like this is generic advice — "write good prompts," "test your code." These 18 skills are built from **direct quotes**: HackerRank's stated evaluation philosophy, the exact rubric weights, the official starter repository's hard requirements, and an organizer post naming specific scored mistakes. Read [RESEARCH.md](./RESEARCH.md) — every claim links back to what HackerRank actually published, tagged `[evidence]` or `[inference]` so you always know which.
+A framework that reports 100/100 is worthless unless it can fail. Negative
+control — five defect classes injected into a healthy repo:
 
-## This isn't just for the contest
+```
+DO NOT SHIP   score 25/100
 
-Strip away the HackerRank framing and what's left is genuinely good agent-engineering discipline: real agent loops instead of decision trees, evidence-anchored justification for every automated decision, schema guardrails on LLM output, honest failure handling, calibrated escalation logic, and treating your AI-collaboration process as a first-class artifact worth doing well. Use these skills for any agent you build, contest or not.
+BLOCKERS:
+  - spec violation: action values legal
+  - spec violation: confidence numeric in [0,1]
+  - spec violation: every cited evidence id exists
+  - hallucinated evidence ids: 2
+  - dataset/output.csv is STALE
+```
 
-## Part of a larger collection
+All five caught, plus the staleness they induced. The test suite applies the
+same standard to itself: several tests exist only to prove the tools can
+*discriminate* — a mentor that says PROCEED to everything and a judge that
+scores everything 80 are both perfectly functional and completely useless.
 
-These 18 skills are also available inside **[skills-i-use](https://github.com/NITISH-R-G/skills-i-use)** — a curated, cross-agent collection of 480+ reviewed Agent Skills covering everything from TDD to API design to DevSecOps.
+## The framework caught itself
 
-## Contributing
+Twice, and both are preserved rather than quietly patched.
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md). The short version: every claim needs a traceable, quoted source — competed in Orchestrate and learned something this got wrong? Open a PR with the correction and a source.
+The first `label-leakage` audit reported a confident **BLOCKER on a healthy
+repository** — three bugs at once: it scanned exploratory scripts as
+production, matched synthetic fixture variables as dataset ids, and treated
+docstrings as executable code. Engineering Memory then attached an unrelated
+entry as "prior art" on a single shared word. Postmortem in
+[`leakage.py`](./orchestrate_kit/evaluator/plugins/orchestrate/leakage.py).
 
-## License
+Later, memory search itself was matching *substrings*: `"code" in
+"cross-encoder"` is true, which attached a retrieval decision to a source-code
+question. Fixed with tokenized matching; the test is
+`test_search_floor_suppresses_incidental_matches`.
 
-MIT — see [LICENSE](./LICENSE). These skills were written from scratch for this collection, grounded in publicly available HackerRank material (quoted with attribution, never reproduced wholesale) — see [RESEARCH.md](./RESEARCH.md) for full sourcing.
+> A clean, confirming result from a broken audit is the most dangerous output
+> in engineering.
 
 ---
 
-*Not affiliated with or endorsed by HackerRank. Built entirely by studying their public writing and official public repositories about how Orchestrate and Chakra work.*
+## The written methodology
+
+| Document | What it is |
+|---|---|
+| **[PLAYBOOK.md](./PLAYBOOK.md)** | 20 rules for building AI systems whose correctness you can prove |
+| **[TIMELINE.md](./TIMELINE.md)** | A real F-1…F-48 defect history — including three audits that were themselves wrong |
+| **[JUDGE-PREP.md](./JUDGE-PREP.md)** | Topics an AI judge actually probed, verbatim feedback, and 10 claims never to make |
+| **[RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md)** | Final gate, ordered so the cheapest checks catch the worst defects |
+| **[RESEARCH.md](./RESEARCH.md)** | Sourcing for every claim, tagged `[evidence]` or `[inference]` |
+| **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ.md](./FAQ.md)** | Self-scoring rubric · common questions |
+
+The `orchestrate_kit` corpus is the same knowledge in executable form. Where
+`TIMELINE.md` tells you dense embeddings lost, `orchestrate memory why-not
+embeddings` gives you the number, the variants tried, and the condition under
+which re-opening it would be correct.
+
+Three things worth taking even if you read nothing else:
+
+**Prove the counterfactual.** To claim a component drives an outcome, disable it
+and show the outcome *stops*. "It works with OCR on" is compatible with OCR
+being decorative.
+
+**Rejection is a deliverable.** "We use embeddings" is a claim anyone can make.
+"We measured embeddings at F1 0.479 against 0.512 and did not ship them" cannot
+be faked.
+
+**Attack your own measurement.** Three audits in the reference build were wrong,
+and each produced a clean, confirming result.
+
+---
+
+## The 34 Agent Skills
+
+Drop-in skills for Claude Code, Cursor, Codex, Cline, Gemini CLI, and anything
+else that reads `SKILL.md`. They trigger automatically from their description —
+no slash commands.
+
+```bash
+cp -r skills/* your-project/.claude/skills/
+```
+
+**Audit tier** — from building and auditing a complete submission to
+destruction:
+
+| Skill | Answers |
+|---|---|
+| [`spec-auditor`](./skills/orchestrate-spec-auditor) | Does it match the spec *literally*? |
+| [`submission-validator`](./skills/orchestrate-submission-validator) | Are all artifacts current and consistent? |
+| [`multimodal-auditor`](./skills/orchestrate-multimodal-auditor) | Does media actually change a decision? |
+| [`dataset-coupling-auditor`](./skills/orchestrate-dataset-coupling-auditor) | Will it survive data I have not seen? |
+| [`determinism-auditor`](./skills/orchestrate-determinism-auditor) | Is it reproducible, and where does that stop? |
+| [`security-auditor`](./skills/orchestrate-security-auditor) | Does every hostile input yield a valid row? |
+| [`confidence-calibrator`](./skills/orchestrate-confidence-calibrator) | Am I calibrating to the labels or to a textbook? |
+| [`evidence-retrieval-expert`](./skills/orchestrate-evidence-retrieval-expert) | Is a retrieval gain even possible? |
+| [`rule-engine-architect`](./skills/orchestrate-rule-engine-architect) | Rules or an LLM — and is any rule dead? |
+| [`interview-coach`](./skills/orchestrate-interview-coach) | Do I own every number in my code? |
+| [`release-engineer`](./skills/orchestrate-release-engineer) | Does it work on someone else's machine? |
+| [`mentor`](./skills/orchestrate-mentor) · [`evaluator`](./skills/orchestrate-evaluator) | Should I make this change? Am I improving? |
+
+**Core flow** — `phase-gates` · `agent-architecture` · `robustness` ·
+`justification-quality` · `ai-collaboration-transcript` · `self-scoring` ·
+`interview-readiness` · `submission-review`
+
+**Tactical** — `schema-guardrails` · `failure-handling` · `naming-and-structure`
+· `secrets-and-determinism` · `edge-case-testing` · `prompt-engineering` ·
+`multi-strategy-evaluation` · `cost-and-ops-metrics` ·
+`multimodal-evidence-grounding` · `escalation-design`
+
+**Design & resilience** — `input-tracing` ·
+`input-validation-and-overrides` · `checkpoint-resilience`
+
+Every skill states its evidence tier. Nothing here claims access to
+HackerRank's internal scoring.
+
+---
+
+## For HackerRank Orchestrate specifically
+
+HackerRank has published how Orchestrate scores a submission. Most participants
+never read it before they start:
+
+| Artifact | Weight | What it measures |
+|---|---|---|
+| Code zip | 30% | Agent design, architecture, robustness — *"actual agent loops versus hardcoded workflows"* |
+| Output CSV | 30% | Correctness against a golden dataset, **and whether each decision has a sound justification** |
+| AI chat transcript | 10% | How you *directed* your AI tools — planning, constraints, debugging |
+| AI judge interview | 30% | Technical depth, communication, and **self-awareness about your own system's limitations** |
+
+From their own post-mortem: **"No single metric reproduces the leaderboard."**
+The winners were balanced across all four signals.
+
+The `hackerrank-orchestrate` plugin detects by dataset *shape*
+(`dataset/messages.csv` + `problem_statement.md`), not by repo name, so it works
+for any season.
+
+## Beyond the contest
+
+Strip away the HackerRank framing and what remains is general engineering
+discipline: measure before you build, record what you rejected and why, attack
+your own harnesses, state boundaries on every guarantee, and be able to defend
+each number in your code. The evaluator's generic plugin, the mentor's taxonomy,
+and every judge persona are domain-independent.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md). Every claim needs a traceable source.
+For code: new audits need a negative control proving they can fail, and new
+memory entries with `status: rejected` need a `reconsider_if`.
+
+Also available inside
+**[skills-i-use](https://github.com/NITISH-R-G/skills-i-use)** — 480+ reviewed
+Agent Skills.
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
+
+---
+
+*Not affiliated with or endorsed by HackerRank. Built by studying their public
+writing and official public repositories.*
