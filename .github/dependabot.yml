@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # Keeps actions/checkout, actions/setup-python, actions/upload-artifact,
+  # actions/github-script, softprops/action-gh-release current -- this is
+  # the direct fix for the "Node.js 20 is deprecated, forced to run on
+  # Node.js 24" annotation CI has been showing: it comes from the pinned
+  # major versions of these actions, not from anything in orchestrate_kit.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # pytest / pytest-cov / build / twine -- the dev-only toolchain declared
+  # in pyproject.toml's [project.optional-dependencies]. Runtime
+  # dependencies stay at zero on principle (see pyproject.toml); this only
+  # ever touches the dev extras.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"

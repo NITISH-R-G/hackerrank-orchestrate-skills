@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/security/advisories/new
+    about: Do not open a public issue for a security report — see SECURITY.md
+  - name: Usage question / "how do I..."
+    url: https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/discussions
+    about: General usage questions go in Discussions, not Issues
