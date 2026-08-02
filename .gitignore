@@ -5,3 +5,5 @@ __pycache__/
 .coverage
 build/
 dist/
+dogfood-*.md
+dogfood-*.txt

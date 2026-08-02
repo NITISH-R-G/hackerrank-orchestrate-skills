@@ -346,6 +346,7 @@ question. Fixed with tokenized matching; the test is
 | **[RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md)** | Final gate, ordered so the cheapest checks catch the worst defects |
 | **[RESEARCH.md](./RESEARCH.md)** | Sourcing for every claim, tagged `[evidence]` or `[inference]` |
 | **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ.md](./FAQ.md)** | Self-scoring rubric · common questions |
+| **[docs/adr/](./docs/adr/)** | 5 Architecture Decision Records for the biggest engineering calls (deterministic routing, constrained arbitration, Engineering Memory, negative controls, plugin architecture) — each cross-referenced to the `orchestrate memory recall` entry with the actual measurement behind it |
 
 The `orchestrate_kit` corpus is the same knowledge in executable form. Where
 `TIMELINE.md` tells you dense embeddings lost, `orchestrate memory why-not
@@ -469,6 +470,7 @@ Coverage is measured the same way: **72%** total
 | Tested platforms | Ubuntu, Windows (CI matrix — Windows is there on purpose: a Windows-only path bug has already shipped once) |
 | Runtime dependencies | 0 |
 | Tests | 57, plus the example plugin's own 16 |
+| Self-audit | Every CI run evaluates, self-tests, and interviews-against THIS repo — the `dogfood-self-audit` artifact on any run's [Actions tab](https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/actions) is `orchestrate evaluate .` / `selftest` / `mentor` / `interview`'s real, current output, not a claim |
 | Changelog | [CHANGELOG.md](./CHANGELOG.md) |
 | Roadmap | [ROADMAP.md](./ROADMAP.md) |
 | Security policy | [SECURITY.md](./SECURITY.md) |
