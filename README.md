@@ -1,6 +1,6 @@
 # HackerRank Orchestrate Skills
 
-**21 free AI agent skills for HackerRank Orchestrate — evidence-cited line by line from HackerRank's published methodology, the official starter repositories for the May and June 2026 events, an independent engineering analysis, and a first-hand #1-ranked participant case study.** Drop them into Claude Code, Cursor, Codex, or any agent that supports the [Agent Skills](https://agentskills.io) standard, and they trigger automatically while you build — no slash commands, nothing to remember.
+**34 free AI agent skills, a working repo evaluator, and a full AI-judge prep package for HackerRank Orchestrate — evidence-cited line by line from HackerRank's published methodology, the official starter repositories for the May and June 2026 events, an independent engineering analysis, and a first-hand #1-ranked participant case study.** Drop them into Claude Code, Cursor, Codex, or any agent that supports the [Agent Skills](https://agentskills.io) standard, and they trigger automatically while you build — no slash commands, nothing to remember.
 
 If you're competing in HackerRank Orchestrate (or prepping for one), this repo exists so you don't lose points to things that have nothing to do with your agent's actual quality — an unread rubric, an unscoreable justification, an interview answer that's true but too vague to score.
 
@@ -20,6 +20,62 @@ HackerRank has published exactly how Orchestrate scores a submission. Most parti
 Published finding from HackerRank's own post-mortem: **"No single metric reproduces the leaderboard."** The winners weren't the best coders — they were balanced across all four signals.
 
 Full research writeup, with sourcing for every claim: **[RESEARCH.md](./RESEARCH.md)** · Self-scoring rubric: **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ](./FAQ.md)**
+
+---
+
+## v4 — the audit tier
+
+Everything above came from *reading about* Orchestrate. v4 comes from **building a
+complete August 2026 submission and auditing it to destruction**: 48 logged defects
+(F-1…F-48), 9 measured-and-rejected optimisations, 17 certification scripts, and one
+completed AI-judge interview.
+
+That is a new evidence tier, and it is labelled as such in every v4 skill. It is *not*
+access to HackerRank's internal scoring, and nothing here claims to be.
+
+| Deliverable | What it is |
+|---|---|
+| **[PLAYBOOK.md](./PLAYBOOK.md)** | 20 rules for building AI systems whose correctness you can prove |
+| **[TIMELINE.md](./TIMELINE.md)** | The real F-1…F-48 history — including three audits that were themselves wrong |
+| **[JUDGE-PREP.md](./JUDGE-PREP.md)** | Topics the judge actually probed, verbatim feedback, model answers, and 10 claims never to make |
+| **[RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md)** | Final gate, ordered so the cheapest checks catch the worst defects |
+| **[tools/](./tools)** | `aiev` — a working evaluator you point at a repo |
+
+```bash
+python -m aiev evaluate /path/to/your/orchestrate-repo --markdown report.md
+```
+
+### The 13 v4 skills
+
+| Skill | Answers |
+|---|---|
+| [`orchestrate-spec-auditor`](./skills/orchestrate-spec-auditor) | Does it match the spec *literally*? |
+| [`orchestrate-submission-validator`](./skills/orchestrate-submission-validator) | Are all three artifacts current and consistent? |
+| [`orchestrate-multimodal-auditor`](./skills/orchestrate-multimodal-auditor) | Does media actually change a decision? |
+| [`orchestrate-dataset-coupling-auditor`](./skills/orchestrate-dataset-coupling-auditor) | Will it survive data I have not seen? |
+| [`orchestrate-determinism-auditor`](./skills/orchestrate-determinism-auditor) | Is it reproducible, and where does that stop? |
+| [`orchestrate-security-auditor`](./skills/orchestrate-security-auditor) | Does every hostile input yield a valid row? |
+| [`orchestrate-confidence-calibrator`](./skills/orchestrate-confidence-calibrator) | Am I calibrating to the labels or to a textbook? |
+| [`orchestrate-evidence-retrieval-expert`](./skills/orchestrate-evidence-retrieval-expert) | Is a retrieval gain even possible? |
+| [`orchestrate-rule-engine-architect`](./skills/orchestrate-rule-engine-architect) | Rules or an LLM — and is any rule dead? |
+| [`orchestrate-interview-coach`](./skills/orchestrate-interview-coach) | Do I own every number in my code? |
+| [`orchestrate-release-engineer`](./skills/orchestrate-release-engineer) | Does it work on someone else's machine? |
+| [`orchestrate-mentor`](./skills/orchestrate-mentor) | Should I make this change **before** I make it? |
+| [`orchestrate-evaluator`](./skills/orchestrate-evaluator) | Am I moving toward Rank 1? |
+
+### Three things worth taking even if you read nothing else
+
+**Prove the counterfactual.** To claim a component drives an outcome, disable it and
+show the outcome *stops*. "It works with OCR on" is compatible with OCR being
+decorative.
+
+**Rejection is a deliverable.** "We use embeddings" is a claim anyone can make. "We
+measured embeddings at F1 0.479 against 0.512 and did not ship them" cannot be faked —
+and a real judge praised exactly this: *"measuring your own assumptions and being
+willing to reject changes that didn't improve things."*
+
+**Attack your own measurement.** Three audits in the reference build were wrong, and
+each produced a clean, confirming result. Two would have shipped a false conclusion.
 
 ## What's new in this version
 
