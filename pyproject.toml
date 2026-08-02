@@ -38,7 +38,11 @@ Issues = "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/issues"
 include = ["orchestrate_kit*"]
 
 [tool.setuptools.package-data]
-orchestrate_kit = ["../data/memory.json"]
+# Inside the package, not "../data/..". A path reaching outside orchestrate_kit
+# only worked for an editable install from a git checkout -- it silently
+# dropped the seed corpus from a real wheel build. Verified by building a
+# wheel and installing it into a clean venv with no local checkout present.
+orchestrate_kit = ["data/memory.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

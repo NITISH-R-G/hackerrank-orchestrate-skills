@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-NOTE: This license applies to the curation, README, and the 23 skills marked
-"original" in LICENSE-AND-ATTRIBUTION.md. It does NOT relicense any
-third-party skill included in the skills/ directory -- those retain
-whatever license (or lack thereof) their original repository specifies.
-See LICENSE-AND-ATTRIBUTION.md for the full source list.

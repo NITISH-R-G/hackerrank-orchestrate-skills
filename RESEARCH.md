@@ -1,6 +1,8 @@
 # The Orchestrate Intelligence Layer
 
-**21 skills** for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.
+**34 skills**, plus the `orchestrate_kit` toolkit, for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.
+
+This document itself dates to the 21-skill (v3) research pass — it records the sourcing for the general and tactical skill categories. The 13 audit-tier skills added later are sourced from a first-hand completed submission rather than published HackerRank material; see [TIMELINE.md](./TIMELINE.md) and [JUDGE-PREP.md](./JUDGE-PREP.md) for that evidence tier.
 
 ## A note on scope
 

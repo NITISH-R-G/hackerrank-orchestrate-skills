@@ -1,5 +1,10 @@
 # orchestrate-kit
 
+[![CI](https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](./pyproject.toml)
+[![Zero runtime deps](https://img.shields.io/badge/dependencies-0-brightgreen)](./pyproject.toml)
+
 **Software for building AI systems you can defend.** An evaluator, an
 institutional memory that remembers what you already measured and rejected, a
 mentor that costs a change before you write it, and an interview simulator that
@@ -8,10 +13,18 @@ cross-examines you.
 Plus 34 [Agent Skills](https://agentskills.io) and the full written methodology.
 
 ```bash
+git clone https://github.com/NITISH-R-G/hackerrank-orchestrate-skills.git
+cd hackerrank-orchestrate-skills
 pip install -e .
-orchestrate memory seed
-orchestrate mentor "I want to add OCR"
+python -m orchestrate_kit memory seed
+python -m orchestrate_kit mentor "I want to add OCR"
 ```
+
+`python -m orchestrate_kit` always works, in a venv or not. `pip install -e .`
+also registers a plain `orchestrate` command — use it once its `Scripts`/`bin`
+directory is on your `PATH` (a venv puts it there automatically; a bare
+`pip install` on Windows often does not, and prints a warning telling you
+where it landed).
 
 Zero runtime dependencies. No API key. Everything runs offline.
 
@@ -224,12 +237,15 @@ the chosen one — precisely what `git log` cannot show.
 git clone https://github.com/NITISH-R-G/hackerrank-orchestrate-skills.git
 cd hackerrank-orchestrate-skills
 pip install -e ".[dev]"
-orchestrate memory seed
-python -m pytest        # 53 tests
-orchestrate selftest    # negative control
+python -m orchestrate_kit memory seed
+python -m pytest                     # 53 tests
+python -m orchestrate_kit selftest   # negative control
 ```
 
-Or run without installing: `python -m orchestrate_kit <command>`.
+Every command in this README uses `python -m orchestrate_kit` because it works
+unconditionally — no PATH configuration, venv or not. `pip install -e .` also
+registers a shorter `orchestrate` command once its install location is on your
+`PATH`; swap it in once you've confirmed `orchestrate --help` resolves.
 
 ## Writing a plugin
 

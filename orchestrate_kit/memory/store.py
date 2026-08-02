@@ -232,7 +232,17 @@ def _esc(s: str) -> str:
 
 def default_path(repo: Path | None = None) -> Path:
     """Memory lives WITH the code under audit. Memory in the tool is a cache;
-    memory beside the code is institutional knowledge."""
+    memory beside the code is institutional knowledge.
+
+    The bundled seed corpus resolves to `orchestrate_kit/data/memory.json` --
+    INSIDE the package, not the repo root. A path reaching outside the package
+    (`parents[2]`, `../data`) only "works" for an editable install run from a
+    git checkout; it silently breaks for a real `pip install` from a wheel,
+    where the package is copied into `site-packages` with nothing beside it.
+    That failure mode is invisible in local testing and only shows up for the
+    first real PyPI user -- exactly the kind of measured-in-the-wrong-
+    -configuration mistake this project's own Engineering Memory warns about
+    (see F-16-distress-lexicon)."""
     if repo and (Path(repo) / ".orchestrate" / "memory.json").exists():
         return Path(repo) / ".orchestrate" / "memory.json"
-    return Path(__file__).resolve().parents[2] / "data" / "memory.json"
+    return Path(__file__).resolve().parents[1] / "data" / "memory.json"
