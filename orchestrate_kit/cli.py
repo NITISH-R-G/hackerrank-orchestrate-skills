@@ -8,6 +8,8 @@
     orchestrate memory  <sub>            recall · why-not · list · seed · add
     orchestrate graph                    decision graph (Mermaid)
     orchestrate viz     <name>           generated diagrams
+    orchestrate selftest                 negative control: can the evaluator fail?
+    orchestrate plugin new <name>        scaffold a plugin + its negative control
 
 Exit codes are the contract, because these run in CI:
     0  clean
@@ -138,6 +140,29 @@ def cmd_release(args) -> int:
 
 
 # ======================================================================
+def cmd_plugin(args) -> int:
+    from .scaffold import new_plugin
+    written = new_plugin(args.name, args.detect, args.category,
+                         Path(args.dest), args.title or "")
+    print(f"scaffolded plugin {args.name!r}:")
+    for p in written:
+        print(f"  {p}")
+    print()
+    print("The generated audit FAILS on purpose, and one test is marked xfail.")
+    print("Your first run should be red. Making it green is the exercise --")
+    print("a plugin whose audits have never produced a finding cannot be")
+    print("trusted to produce one when it matters.")
+    return 0
+
+
+def cmd_selftest(args) -> int:
+    from .selftest import run
+    print("=" * 84)
+    print("NEGATIVE CONTROL — can the evaluator actually fail?")
+    print("=" * 84)
+    return run()
+
+
 def cmd_mentor(args) -> int:
     mem = _memory(args)
     if not mem.entries:
@@ -310,6 +335,22 @@ def build_parser() -> argparse.ArgumentParser:
     r = sub.add_parser("release", help="pre-submission gate")
     r.add_argument("repo", nargs="?", default=".")
     r.set_defaults(fn=cmd_release)
+
+    pl = sub.add_parser("plugin", help="scaffold a new evaluator plugin")
+    pls = pl.add_subparsers(dest="psub", required=True)
+    pn = pls.add_parser("new")
+    pn.add_argument("name")
+    pn.add_argument("--detect", required=True,
+                    help="a path whose presence identifies this domain "
+                         "(SHAPE, never a repo name)")
+    pn.add_argument("--category", default="evaluation")
+    pn.add_argument("--title", default="")
+    pn.add_argument("--dest", default="plugins")
+    pl.set_defaults(fn=cmd_plugin, repo=".")
+
+    st = sub.add_parser("selftest",
+                        help="inject defects and prove the evaluator catches them")
+    st.set_defaults(fn=cmd_selftest, repo=".")
 
     m = sub.add_parser("mentor", help='e.g. orchestrate mentor "add OCR"')
     m.add_argument("proposal", nargs="+")

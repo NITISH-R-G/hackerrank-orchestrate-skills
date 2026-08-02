@@ -30,6 +30,7 @@ This answers the questions that actually decide whether you ship:
 | Why *didn't* we do X? | `orchestrate memory why-not "embeddings"` |
 | Can I survive being asked about it? | `orchestrate interview --difficulty hard` |
 | Is this actually releasable? | `orchestrate release <repo>` |
+| Can my audits even fail? | `orchestrate selftest` |
 
 One rule runs through all of it: **nothing states a number it did not measure.**
 Where a measurement is absent the tools print `UNKNOWN` and hand you the
@@ -183,6 +184,7 @@ Three verbs, three different questions:
 | `evaluate` | is this shippable? | `2` on any blocker |
 | `certify` | is this *clean*? any finding above INFO fails | `3` on non-blocking findings |
 | `release` | is this submittable? adds gates + manual items | `2` on gate failure |
+| `selftest` | can the audits fail at all? | `2` if a defect slips through |
 
 Every finding carries the literal command output plus a confidence label —
 `measured` / `observed` / `inferred` / `unknown`. Inferred findings are
@@ -223,12 +225,22 @@ git clone https://github.com/NITISH-R-G/hackerrank-orchestrate-skills.git
 cd hackerrank-orchestrate-skills
 pip install -e ".[dev]"
 orchestrate memory seed
-python -m pytest        # 48 tests
+python -m pytest        # 53 tests
+orchestrate selftest    # negative control
 ```
 
 Or run without installing: `python -m orchestrate_kit <command>`.
 
 ## Writing a plugin
+
+```bash
+orchestrate plugin new rag --detect "eval/questions.jsonl" --category retrieval
+```
+
+Generates the plugin, a README, and **its negative control** — seven tests
+including "the audit can actually fail" and "skips rather than passing when it
+cannot run". The generated audit fails on purpose and one test is marked
+`xfail`: your first run is red, and making it green is the exercise.
 
 ```python
 class MyPlugin:
@@ -245,26 +257,47 @@ An audit gets a `RepoContext` (run commands, read files, glob) and returns an
 `AuditResult`. **It must never raise** — a crash is reported as a finding, not
 swallowed.
 
-## Does it actually detect anything?
+## Does it actually detect anything? — `orchestrate selftest`
 
-A framework that reports 100/100 is worthless unless it can fail. Negative
-control — five defect classes injected into a healthy repo:
+A framework that reports 100/100 is worthless unless it can fail. This builds a
+healthy fixture repo, confirms it passes, then injects defects one at a time:
 
 ```
-DO NOT SHIP   score 25/100
+$ orchestrate selftest
 
-BLOCKERS:
-  - spec violation: action values legal
-  - spec violation: confidence numeric in [0,1]
-  - spec violation: every cited evidence id exists
-  - hallucinated evidence ids: 2
-  - dataset/output.csv is STALE
+  baseline           CLEAN   (0 finding(s))
+  CAUGHT illegal action value                             blocker
+  CAUGHT illegal message_type value                       blocker
+  CAUGHT confidence out of range                          blocker
+  CAUGHT comma instead of the spec separator              blocker
+  CAUGHT hallucinated evidence id                         blocker
+  CAUGHT empty evidence written as blank, not 'none'      blocker
+  CAUGHT row dropped from the artifact                    blocker
+  CAUGHT degenerate output: one action for every row      high
+  CAUGHT hardcoded answer table keyed by dataset id       blocker
+  CAUGHT dataset id compared in decision logic            blocker
+  quiet  dataset id in a comment                          (must stay quiet)
+  quiet  dataset id in a docstring                        (must stay quiet)
+  quiet  single fixture assignment                        (must stay quiet)
+
+SELFTEST PASSED — baseline clean, 10/10 injected defects caught,
+                  3/3 benign cases quiet.
 ```
 
-All five caught, plus the staleness they induced. The test suite applies the
-same standard to itself: several tests exist only to prove the tools can
-*discriminate* — a mentor that says PROCEED to everything and a judge that
-scores everything 80 are both perfectly functional and completely useless.
+Both halves matter. The three `quiet` rows are the positive control: an audit
+that fires on everything is as useless as one that fires on nothing, and this
+particular audit has a documented history of a confident BLOCKER on a healthy
+repository.
+
+**It found a real gap on its first run.** The leakage audit excluded assignment
+lines — a fix for that earlier false positive — which meant
+`SPECIAL = {"msg_002": ("notify", "urgent")}` slipped through: an assignment
+*and* a hardcoded answer table. Two forms now survive the exclusion: an id used
+as a mapping key, and two distinct ids on one line.
+
+The test suite applies the same standard to itself, including a negative
+control *on* the selftest — swap in an evaluator that finds nothing and
+`selftest` must go red, otherwise a passing run proves only that it ran.
 
 ## The framework caught itself
 

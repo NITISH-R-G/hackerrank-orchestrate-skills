@@ -356,3 +356,97 @@ def test_memory_add_accepts_a_justified_rejection(tmp_path):
                "--reconsider-if", "the dataset grows past 200 rows"])
     assert rc == 0
     assert json.loads(path.read_text(encoding="utf-8"))["entries"][0]["key"] == "D-x"
+
+
+# ===================================================== selftest
+def test_selftest_passes():
+    """The negative control must itself be green: baseline clean, every
+    injected defect caught, every benign case quiet."""
+    from orchestrate_kit.selftest import run
+    assert run(verbose=False) == 0
+
+
+def test_selftest_would_notice_a_blind_audit(monkeypatch):
+    """Negative control ON the negative control.
+
+    If the evaluator were replaced by one that finds nothing, selftest must
+    FAIL. Without this, a passing selftest proves only that it ran."""
+    from orchestrate_kit import selftest
+
+    class Blind:
+        results: list = []
+        blockers: list = []
+        unknowns: list = []
+
+    monkeypatch.setattr(selftest, "Evaluator",
+                        lambda *a, **k: type("E", (), {
+                            "register": lambda self, p: None,
+                            "run": lambda self, only=None: Blind(),
+                        })())
+    assert selftest.run(verbose=False) == 2
+
+
+# ===================================================== scaffold
+def test_scaffold_generates_importable_working_code(tmp_path):
+    import importlib.util
+
+    from orchestrate_kit.evaluator.plugin_api import RepoContext
+    from orchestrate_kit.scaffold import new_plugin
+
+    written = new_plugin("rag", "eval/questions.jsonl", "retrieval", tmp_path)
+    assert len(written) == 3
+
+    spec = importlib.util.spec_from_file_location("rag_plugin", written[0])
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    plugin = mod.RagPlugin()
+    assert plugin.name == "rag"
+    assert [a.category for a in plugin.audits()] == ["retrieval"]
+
+    # detects on shape
+    (tmp_path / "repo" / "eval").mkdir(parents=True)
+    (tmp_path / "repo" / "eval" / "questions.jsonl").write_text("{}\n",
+                                                                encoding="utf-8")
+    assert plugin.detect(RepoContext(root=tmp_path / "repo"))
+
+    # and does not detect an unrelated repo
+    (tmp_path / "other").mkdir()
+    assert not plugin.detect(RepoContext(root=tmp_path / "other"))
+
+
+def test_scaffolded_audit_skips_rather_than_passing_blind(tmp_path):
+    import importlib.util
+
+    from orchestrate_kit.evaluator.plugin_api import RepoContext
+    from orchestrate_kit.scaffold import new_plugin
+
+    written = new_plugin("rag", "eval/questions.jsonl", "retrieval", tmp_path)
+    spec = importlib.util.spec_from_file_location("rag_plugin2", written[0])
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    (tmp_path / "bare").mkdir()
+    res = mod.audit_example(RepoContext(root=tmp_path / "bare"))
+    assert res.skipped, "a template that passes when it cannot look teaches the bug"
+
+
+def test_scaffolded_audit_starts_red(tmp_path):
+    """The template must fail out of the box. A scaffold that starts green
+    trains people to ship audits that have never produced a finding."""
+    import importlib.util
+
+    from orchestrate_kit.evaluator.plugin_api import RepoContext
+    from orchestrate_kit.scaffold import new_plugin
+
+    written = new_plugin("rag", "eval/questions.jsonl", "retrieval", tmp_path)
+    spec = importlib.util.spec_from_file_location("rag_plugin3", written[0])
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    repo = tmp_path / "healthy"
+    (repo / "eval").mkdir(parents=True)
+    (repo / "eval" / "questions.jsonl").write_text("{}\n", encoding="utf-8")
+    res = mod.audit_example(RepoContext(root=repo))
+    assert not res.passed and res.findings
+    assert all(f.evidence.strip() for f in res.findings)

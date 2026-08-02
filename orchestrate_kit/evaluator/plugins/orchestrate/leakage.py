@@ -101,10 +101,21 @@ def audit_label_leakage(ctx: RepoContext,
         for i, line in enumerate(code.splitlines(), 1):
             if not ID_PATTERN.search(line):
                 continue
-            # An id being ASSIGNED is a fixture under construction; an id being
-            # COMPARED or looked up is decision logic keyed to the sample.
+            # An id being ASSIGNED is usually a fixture under construction; an
+            # id being COMPARED or looked up is decision logic keyed to the
+            # sample.
+            #
+            # But the exclusion was too broad, and `orchestrate selftest` is
+            # what found it: `SPECIAL = {"msg_002": ("notify", "urgent")}` is
+            # an assignment AND a hardcoded answer table. Two forms survive the
+            # exclusion, because neither can be a single fixture value:
+            #   - an id used as a MAPPING KEY  ("msg_002":  /  "msg_002" =>)
+            #   - two or more DISTINCT ids on one line (a lookup table)
             if re.search(r"^\s*[A-Za-z_][\w\.\[\]'\"]*\s*=\s*[^=]", line):
-                continue
+                keyed = re.search(r"""['"](?:sample_)?(?:msg|message)_\d+['"]\s*:""",
+                                  line)
+                if not keyed and len(set(ID_PATTERN.findall(line))) < 2:
+                    continue
             offenders.append(f"{rel}:{i}: {line.strip()[:90]}")
 
     res.metrics = {"production_files_scanned": len(files),

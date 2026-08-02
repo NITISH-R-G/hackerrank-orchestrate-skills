@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is in the matrix on purpose: a selftest that writes temp
+        # directories named after its own test cases has already been broken
+        # once by a ':' that is legal on POSIX and illegal on Windows.
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev]"
+
+      - name: unit tests
+        run: python -m pytest -q
+
+      - name: each test file must pass IN ISOLATION
+        shell: bash
+        # Not redundant with the suite. A suite can pass purely by import
+        # order -- one file doing a sys.path insert that every later file
+        # silently depends on. Running each file alone is the only way to see
+        # it, and renaming one file is enough to break the whole suite.
+        run: |
+          for f in tests/test_*.py; do
+            echo "--- $f"
+            python -m pytest "$f" -q || exit 1
+          done
+
+      - name: negative control -- prove the evaluator can fail
+        # A green evaluator means nothing unless it is capable of red. This
+        # injects ten defect classes and requires each to be caught, plus
+        # three benign cases that must stay quiet.
+        run: python -m orchestrate_kit selftest
+
+      - name: memory invariants
+        shell: bash
+        run: |
+          python -m orchestrate_kit memory seed
+          python -m orchestrate_kit memory list
+          python -m orchestrate_kit graph > /dev/null
+          python -m orchestrate_kit viz all --out /tmp/diagrams
+
+      - name: mentor must not silently degrade to PROCEED-for-everything
+        shell: bash
+        run: |
+          python -m orchestrate_kit mentor "use dense embeddings" && {
+            echo "FAIL: a measured rejection did not block (expected exit 2)"; exit 1; }
+          echo "ok: measured rejection blocks as expected"
+
+      - name: hermetic -- no credential may be required
+        shell: bash
+        env:
+          GROQ_API_KEY: ""
+          OPENAI_API_KEY: ""
+          ANTHROPIC_API_KEY: ""
+        run: python -m pytest -q
