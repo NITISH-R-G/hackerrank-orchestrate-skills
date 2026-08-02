@@ -23,8 +23,8 @@ jobs:
   build-and-verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -71,14 +71,14 @@ jobs:
           /tmp/release_check/bin/python -m orchestrate_kit memory why-not "embeddings"
           /tmp/release_check/bin/python -m orchestrate_kit mentor "add OCR"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
 
       - name: attach to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           generate_release_notes: true
