@@ -440,6 +440,26 @@ your own harnesses, state boundaries on every guarantee, and be able to defend
 each number in your code. The evaluator's generic plugin, the mentor's taxonomy,
 and every judge persona are domain-independent.
 
+## GitHub Action
+
+```yaml
+- uses: actions/checkout@v4
+- uses: NITISH-R-G/hackerrank-orchestrate-skills/action@master
+  with:
+    path: "."
+```
+
+Evaluates your repo on every push/PR, uploads the report as a build
+artifact, comments the result on the PR (updated in place, not spammed),
+and fails the build on a release blocker. Outputs (`score`, `verdict`,
+`blockers`, `report-path`) are read off the real `Evaluation` object, not
+scraped from terminal text — see [`action/README.md`](./action/README.md).
+
+Not a claim it works: `.github/workflows/action-selftest.yml` runs this
+exact `uses:` line against this repository on every push, and the [Actions
+tab](https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/actions/workflows/action-selftest.yml)
+shows the real, current result.
+
 ## Examples
 
 [`examples/python-quality-plugin`](./examples/python-quality-plugin) — a

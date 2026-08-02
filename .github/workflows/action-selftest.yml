@@ -1,0 +1,42 @@
+name: action-selftest
+
+# Proves the composite action in action/ actually works, by using it exactly
+# the way a real consumer would (`uses: <owner>/<repo>/action@<ref>`, here
+# pinned to the local checkout) against this repository itself. Not a claim
+# that it works -- a run of it working, watchable on the Actions tab of any
+# push.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  self-test-the-action:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: run the real action against this repo
+        id: eval
+        uses: ./action
+        with:
+          path: "."
+          fail-on-blocker: "true"
+
+      - name: verify the action's outputs are actually populated
+        # An action with unset/empty outputs would pass silently otherwise --
+        # this is the negative-control habit this project applies everywhere
+        # else, applied to the action itself.
+        shell: bash
+        run: |
+          echo "score=${{ steps.eval.outputs.score }}"
+          echo "verdict=${{ steps.eval.outputs.verdict }}"
+          echo "blockers=${{ steps.eval.outputs.blockers }}"
+          echo "report-path=${{ steps.eval.outputs.report-path }}"
+          [ -n "${{ steps.eval.outputs.score }}" ] || { echo "::error::score output is empty"; exit 1; }
+          [ -n "${{ steps.eval.outputs.verdict }}" ] || { echo "::error::verdict output is empty"; exit 1; }
+          [ -f "orchestrate-report.md" ] || { echo "::error::report file was not written"; exit 1; }
+          echo "ok: action produced real, non-empty outputs and a report file"

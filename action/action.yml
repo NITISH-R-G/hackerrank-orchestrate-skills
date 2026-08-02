@@ -1,0 +1,122 @@
+name: "orchestrate evaluate"
+description: >-
+  Runs orchestrate_kit's black-box evaluator against a repository, uploads
+  the report as a build artifact, comments the result on the PR, and fails
+  the build on a release blocker.
+author: "NITISH-R-G"
+branding:
+  icon: "check-circle"
+  color: "green"
+
+inputs:
+  path:
+    description: "Path to the repository to evaluate, relative to the workspace."
+    required: false
+    default: "."
+  fail-on-blocker:
+    description: >-
+      Fail this step (exit 2) if the evaluator finds any release blocker.
+      Set to "false" to only report and never fail the build.
+    required: false
+    default: "true"
+  comment-on-pr:
+    description: >-
+      Post (or update) a PR comment with the result. Only applies on
+      pull_request events; ignored otherwise. The comment is updated in
+      place on re-runs, not duplicated.
+    required: false
+    default: "true"
+  python-version:
+    description: "Python version to run the evaluator with."
+    required: false
+    default: "3.12"
+
+outputs:
+  score:
+    description: "Overall score, 0-100."
+    value: ${{ steps.evaluate.outputs.score }}
+  verdict:
+    description: 'READY / "READY WITH RESERVATIONS" / "NOT READY" / "DO NOT SHIP"'
+    value: ${{ steps.evaluate.outputs.verdict }}
+  blockers:
+    description: "Count of release-blocking findings."
+    value: ${{ steps.evaluate.outputs.blockers }}
+  report-path:
+    description: "Path to the generated markdown report."
+    value: ${{ steps.evaluate.outputs.report-path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: install orchestrate_kit from this action's own checkout
+      # No PyPI dependency: `github.action_path` is where GitHub checks out
+      # THIS action's repo (at whatever ref the consumer pinned via
+      # `uses: .../action@<ref>`), so installing from it guarantees the
+      # evaluator version matches the action version exactly -- no drift
+      # between "the action you pinned" and "the package it happens to pull."
+      shell: bash
+      run: pip install -e "${{ github.action_path }}/.."
+
+    - name: run the evaluator
+      id: evaluate
+      shell: bash
+      # `|| true` because a blocker's exit code (2) must not abort this
+      # composite BEFORE the report is uploaded and the PR is commented --
+      # failing the build (if requested) happens explicitly, as the LAST
+      # step, after the report exists somewhere a human can actually see it.
+      run: |
+        python "${{ github.action_path }}/run_evaluate.py" \
+          "${{ inputs.path }}" "orchestrate-report.md" || true
+
+    - name: upload report artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: orchestrate-evaluate-report
+        path: orchestrate-report.md
+
+    - name: comment on the PR
+      if: ${{ inputs.comment-on-pr == 'true' && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('orchestrate-report.md', 'utf8');
+          const marker = '<!-- orchestrate-evaluate-report -->';
+          const body = `${marker}\n${report}`;
+
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          const existing = comments.find(c => c.body && c.body.includes(marker));
+
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existing.id,
+              body,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+          }
+
+    - name: fail on blocker
+      if: ${{ inputs.fail-on-blocker == 'true' }}
+      shell: bash
+      run: |
+        if [ "${{ steps.evaluate.outputs.blockers }}" != "0" ]; then
+          echo "::error::orchestrate evaluate found ${{ steps.evaluate.outputs.blockers }} release blocker(s). See the uploaded report."
+          exit 1
+        fi

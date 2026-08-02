@@ -519,3 +519,56 @@ def test_bench_reports_unknown_rather_than_a_fabricated_number():
     rows = [{"label": "x", "mean_s": 0.1, "min_s": 0.1, "max_s": 0.1,
              "stdev_s": 0.0, "peak_mb": None}]
     assert "n/a" in render_markdown(rows)
+
+
+# ===================================================== GitHub Action script
+def test_run_evaluate_writes_structured_outputs(tmp_path):
+    """action/run_evaluate.py must never regress into terminal-scraping --
+    it calls the Evaluator directly and writes GITHUB_OUTPUT from real
+    Evaluation fields. This is the regression test for that contract.
+
+    Runs against selftest's small fixture, not this repository -- pointed
+    at the real repo, the fresh-clone audit's `git clone` + nested
+    `pytest` run compounds badly when this test itself runs inside an
+    already-running pytest process (observed: >60s, vs <1s here). The
+    full-repo path is already covered by BENCHMARKS.md and CI's dogfood
+    job running the actual `orchestrate evaluate .`."""
+    import os
+    import subprocess
+    import sys as _sys
+
+    from orchestrate_kit.selftest import _write_healthy
+
+    _write_healthy(tmp_path)
+    script = Path(__file__).resolve().parents[1] / "action" / "run_evaluate.py"
+    report = tmp_path / "report.md"
+    gh_output = tmp_path / "gh_output.txt"
+    env = {**os.environ, "GITHUB_OUTPUT": str(gh_output)}
+
+    result = subprocess.run(
+        [_sys.executable, str(script), str(tmp_path), str(report)],
+        capture_output=True, text=True, env=env, timeout=30)
+
+    assert result.returncode in (0, 2), result.stderr
+    assert report.exists()
+    text = gh_output.read_text(encoding="utf-8")
+    for key in ("score=", "verdict=", "blockers=", "findings=", "report-path="):
+        assert key in text, f"missing GITHUB_OUTPUT key: {key}"
+
+
+def test_run_evaluate_exits_2_on_a_real_blocker(tmp_path):
+    from orchestrate_kit.selftest import INJECTIONS, _write_healthy
+    import subprocess
+    import sys as _sys
+
+    _write_healthy(tmp_path)
+    illegal_action = next(i for i in INJECTIONS if i.name == "illegal action value")
+    illegal_action.apply(tmp_path)
+
+    script = Path(__file__).resolve().parents[1] / "action" / "run_evaluate.py"
+    report = tmp_path / "report.md"
+    result = subprocess.run(
+        [_sys.executable, str(script), str(tmp_path), str(report)],
+        capture_output=True, text=True, timeout=60)
+    assert result.returncode == 2
+    assert "BLOCKER" in result.stdout
