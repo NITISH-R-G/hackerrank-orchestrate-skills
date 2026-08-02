@@ -439,11 +439,51 @@ your own harnesses, state boundaries on every guarantee, and be able to defend
 each number in your code. The evaluator's generic plugin, the mentor's taxonomy,
 and every judge persona are domain-independent.
 
+## Examples
+
+[`examples/python-quality-plugin`](./examples/python-quality-plugin) — a
+second, independent evaluator plugin (two AST-based Python static checks),
+proving the plugin system generalizes beyond the first-party Orchestrate
+plugin. Run against `orchestrate_kit`'s own production code, the measured
+result is `READY score 100/100` — zero bare excepts, zero mutable default
+arguments, checked, not asserted.
+
+## Measured performance
+
+[`BENCHMARKS.md`](./BENCHMARKS.md) — wall-clock and peak-memory numbers for
+every CLI command, regenerable on your own machine with
+`python -m orchestrate_kit.bench > BENCHMARKS.md`. Every number is a cold
+subprocess run (real Python startup included, the way a user actually
+experiences it), 5 repeats, mean/min/max/stdev reported — a property of this
+repository on the machine that ran it, not a universal performance claim.
+
+Coverage is measured the same way: **72%** total
+(`pytest --cov=orchestrate_kit`), reported honestly with no target attached
+— see [ROADMAP.md](./ROADMAP.md) for the two modules that are the real gaps.
+
+## Project status
+
+| | |
+|---|---|
+| Tested Python versions | 3.10 and 3.13 via CI matrix; `pyproject.toml` declares `>=3.10` with no upper cap (untested versions above 3.13 may work — they just aren't in the matrix yet) |
+| Tested platforms | Ubuntu, Windows (CI matrix — Windows is there on purpose: a Windows-only path bug has already shipped once) |
+| Runtime dependencies | 0 |
+| Tests | 57, plus the example plugin's own 16 |
+| Changelog | [CHANGELOG.md](./CHANGELOG.md) |
+| Roadmap | [ROADMAP.md](./ROADMAP.md) |
+| Security policy | [SECURITY.md](./SECURITY.md) |
+| Getting help | [SUPPORT.md](./SUPPORT.md) |
+| Code of conduct | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). Every claim needs a traceable source.
 For code: new audits need a negative control proving they can fail, and new
 memory entries with `status: rejected` need a `reconsider_if`.
+
+A `.devcontainer/` and `.vscode/launch.json` are included — clone, open in
+VS Code / GitHub Codespaces, and `mentor`/`interview`/`selftest`/pytest are
+all one-click debuggable runs, no manual setup.
 
 Also available inside
 **[skills-i-use](https://github.com/NITISH-R-G/skills-i-use)** — 480+ reviewed

@@ -84,6 +84,18 @@ class RepoContext:
     timeout_s: int = 900
     env_overrides: dict[str, str] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        # `root=` is typed Path, but Python doesn't enforce dataclass type
+        # hints -- `RepoContext(root=".")` is an easy, natural mistake, and
+        # str has no `.rglob`/`.glob`. Left uncoerced, `detect()` raises
+        # AttributeError, which `Evaluator.applicable()` catches and
+        # discards (a broken DETECTOR must not abort the whole run) -- so the
+        # plugin just silently never applies, with no error anywhere. Found
+        # by actually using this API, not by inspection: the exact "silent
+        # failure that looks like a clean result" class this project warns
+        # about elsewhere (F-ablation-harness, F-leakage-false-blocker).
+        self.root = Path(self.root)
+
     def run(self, *args: str, timeout: int | None = None) -> subprocess.CompletedProcess:
         """Run a command in the repo root with a hermetic-ish environment."""
         import os

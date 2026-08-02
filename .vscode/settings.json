@@ -1,0 +1,14 @@
+{
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["tests"],
+  "python.analysis.extraPaths": ["."],
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.egg-info": true,
+    ".pytest_cache": true
+  },
+  "[python]": {
+    "editor.formatOnSave": false
+  }
+}

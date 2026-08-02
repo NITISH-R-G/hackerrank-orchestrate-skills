@@ -450,3 +450,72 @@ def test_scaffolded_audit_starts_red(tmp_path):
     res = mod.audit_example(RepoContext(root=repo))
     assert not res.passed and res.findings
     assert all(f.evidence.strip() for f in res.findings)
+
+
+# ===================================================== plugin_api robustness
+def test_repocontext_coerces_a_string_root_to_path(tmp_path):
+    """`RepoContext(root="...")` is an easy, natural mistake -- `root` is
+    typed Path, but Python doesn't enforce dataclass type hints. Left
+    uncoerced, detect() raises AttributeError on the bare string, which
+    Evaluator.applicable() silently swallows (a broken detector must not
+    abort the whole run) -- so a plugin just never applies, with no error
+    anywhere. Found by actually using the API to build the python-quality
+    example plugin, not by inspection."""
+    from orchestrate_kit.evaluator.plugin_api import RepoContext
+
+    ctx = RepoContext(root=str(tmp_path))
+    assert isinstance(ctx.root, Path)
+    assert ctx.root == tmp_path
+
+
+def test_evaluator_applies_a_plugin_when_root_was_passed_as_a_string(tmp_path):
+    """The end-to-end version of the above: a plugin whose detect() calls
+    ctx.root.rglob(...) must actually be found applicable, not silently
+    skipped, when the caller passed root as a string."""
+    from orchestrate_kit.evaluator import Evaluator
+    from orchestrate_kit.evaluator.plugin_api import RepoContext, SimpleAudit
+
+    (tmp_path / "x.py").write_text("pass\n", encoding="utf-8")
+
+    class Trivial:
+        name = "trivial"
+
+        def audits(self):
+            return [SimpleAudit("noop", "quality",
+                                lambda ctx: __import__(
+                                    "orchestrate_kit.evaluator.plugin_api",
+                                    fromlist=["AuditResult"]
+                                ).AuditResult("noop", "quality", True))]
+
+        def detect(self, ctx):
+            return next(ctx.root.rglob("*.py"), None) is not None
+
+    ev = Evaluator(RepoContext(root=str(tmp_path)))
+    ev.register(Trivial())
+    result = ev.run()
+    assert result.plugins == ["trivial"]
+
+
+# ===================================================== bench
+def test_bench_renders_a_clean_markdown_table():
+    """Regression test for a real bug this module had: calling a CLI handler
+    in-process to measure memory printed that command's own output straight
+    into bench.py's stdout, polluting `bench.py > BENCHMARKS.md` with a
+    random command's raw output in the middle of a markdown table. Caught by
+    actually piping the output, not by inspection."""
+    from orchestrate_kit.bench import render_markdown
+
+    rows = [{"label": "memory list", "mean_s": 0.15, "min_s": 0.13,
+             "max_s": 0.19, "stdev_s": 0.02, "peak_mb": 0.4}]
+    text = render_markdown(rows)
+    assert text.startswith("# Benchmarks")
+    assert "| `memory list` |" in text
+    assert "150 ms" in text
+
+
+def test_bench_reports_unknown_rather_than_a_fabricated_number():
+    from orchestrate_kit.bench import render_markdown
+
+    rows = [{"label": "x", "mean_s": 0.1, "min_s": 0.1, "max_s": 0.1,
+             "stdev_s": 0.0, "peak_mb": None}]
+    assert "n/a" in render_markdown(rows)

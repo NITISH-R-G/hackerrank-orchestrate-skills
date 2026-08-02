@@ -1,0 +1,98 @@
+name: release
+
+# Triggered by a version tag (v1.0.0, v1.2.3, ...) or manually via
+# workflow_dispatch. Builds and verifies the distributable artifacts and
+# attaches them to a GitHub Release.
+#
+# Does NOT publish to PyPI. `orchestrate-kit` has not been published there
+# yet -- see ROADMAP.md. The publish step below is written and gated behind
+# a PYPI_API_TOKEN secret that does not currently exist in this repository;
+# it will simply skip until that secret is added, rather than fail or (worse)
+# silently pretend to publish. Marking a step "done" that can't actually run
+# would be exactly the kind of claim this project exists to refuse.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: full verification before anything is released
+        # The same standard as CI, run one more time on the exact commit
+        # being tagged -- a release must never ship on faith that CI passed
+        # on some earlier, possibly-different commit.
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest -q
+          python -m orchestrate_kit selftest
+          python -m pytest examples/python-quality-plugin -q
+
+      - name: build sdist and wheel
+        run: |
+          pip install --upgrade build twine
+          python -m build
+
+      - name: verify the package metadata (twine check)
+        run: python -m twine check dist/*
+
+      - name: verify the wheel actually contains the seed data
+        # Regression check for a real bug this project shipped and fixed:
+        # package-data pointing outside the package directory silently
+        # dropped orchestrate_kit/data/memory.json from the wheel. See
+        # CHANGELOG.md [Unreleased] > Fixed.
+        run: |
+          python -c "
+          import zipfile, glob
+          wheel = glob.glob('dist/*.whl')[0]
+          names = zipfile.ZipFile(wheel).namelist()
+          target = 'orchestrate_kit/data/memory.json'
+          assert target in names, f'{target} missing from {wheel}: {names}'
+          print(f'OK: {target} present in {wheel}')
+          "
+
+      - name: verify install-from-wheel works from a clean, empty directory
+        # The exact scenario a real PyPI user hits: no local checkout, no
+        # repo context, nothing but the installed package.
+        run: |
+          python -m venv /tmp/release_check
+          /tmp/release_check/bin/pip install --quiet dist/*.whl
+          mkdir -p /tmp/nowhere && cd /tmp/nowhere
+          /tmp/release_check/bin/python -m orchestrate_kit memory why-not "embeddings"
+          /tmp/release_check/bin/python -m orchestrate_kit mentor "add OCR"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+
+      - name: publish to PyPI (skipped unless PYPI_API_TOKEN is configured)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TOKEN_SET: ${{ secrets.PYPI_API_TOKEN != '' }}
+        run: |
+          if [ "$TOKEN_SET" != "true" ]; then
+            echo "PYPI_API_TOKEN is not configured -- skipping PyPI publish."
+            echo "The build above is verified and attached to the GitHub"
+            echo "Release; publishing to PyPI is a manual/future step. See"
+            echo "ROADMAP.md."
+            exit 0
+          fi
+          python -m twine upload dist/* -u __token__ -p "${{ secrets.PYPI_API_TOKEN }}"

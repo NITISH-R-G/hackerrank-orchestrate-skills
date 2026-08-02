@@ -25,6 +25,16 @@ jobs:
       - name: unit tests
         run: python -m pytest -q
 
+      - name: coverage (reported, not gated -- no threshold has been earned yet)
+        # A coverage number with a claimed target attached before the target
+        # has been reached is exactly the kind of invented claim this project
+        # exists to refuse. This reports the real figure every run; it does
+        # not fail the build on it. See ROADMAP.md.
+        run: python -m pytest --cov=orchestrate_kit --cov-report=term-missing -q
+
+      - name: example plugin (proves the plugin system generalizes)
+        run: python -m pytest examples/python-quality-plugin -q
+
       - name: each test file must pass IN ISOLATION
         shell: bash
         # Not redundant with the suite. A suite can pass purely by import

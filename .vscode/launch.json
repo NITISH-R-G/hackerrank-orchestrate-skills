@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "orchestrate mentor \"add OCR\"",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "orchestrate_kit",
+      "args": ["mentor", "I want to add OCR"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "orchestrate interview --learn",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "orchestrate_kit",
+      "args": ["interview", "--persona", "skeptic", "--difficulty", "warmup", "--learn"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "orchestrate selftest (negative control)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "orchestrate_kit",
+      "args": ["selftest"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "orchestrate evaluate .",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "orchestrate_kit",
+      "args": ["evaluate", "."],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "pytest: current file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-v"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "pytest: full suite",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
