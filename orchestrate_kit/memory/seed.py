@@ -666,7 +666,119 @@ PROCESS = [
       lesson="Make the safe configuration the default, not the documented one."),
 ]
 
-ALL = BUILD + MULTIMODAL + META + HARDENING + REJECTIONS + PROCESS
+# =====================================================================
+# Phase 5 -- orchestrate_kit's OWN development, not the submission story
+# =====================================================================
+# Everything above documents a DIFFERENT, historical codebase (the original
+# Orchestrate submission's message router, code/router/*.py -- not present
+# in this repository). These entries are the first to describe
+# orchestrate_kit's own source, and are the only ones where `files` is
+# honest to populate: the paths below are real and were verified to exist
+# at the time each entry was written. `orchestrate memory verify` checks
+# that they still do.
+ORCHESTRATE_KIT_ITSELF = [
+    M(key="F-package-data-outside-package", kind="finding", phase="5-orchestrate-kit",
+      title="package-data pointed outside the package, dropped from a real wheel",
+      problem="pyproject.toml declared package-data as '../data/memory.json' "
+              "-- a path reaching outside orchestrate_kit/, unsupported by "
+              "setuptools.",
+      root_cause="It worked locally only by two compounding accidents: an "
+                 "editable install's directory layout happened to coincide "
+                 "with where the resulting wheel placed the file, AND "
+                 "default_path()'s parents[2] calculation coincidentally "
+                 "landed on the same spot.",
+      chosen="Move the seed corpus to orchestrate_kit/data/memory.json -- "
+             "inside the package -- and resolve it with parents[1]",
+      rejected=["leaving the accidental layout as-is since it 'worked'"],
+      evidence="Built a real wheel, installed it into a clean venv with no "
+               "local checkout present: the bundled memory seed corpus was "
+               "silently missing.",
+      blast_radius="Would have broken the first real PyPI install -- "
+                   "invisible in every local test run before that.",
+      files=["orchestrate_kit/memory/store.py", "pyproject.toml"],
+      tags=["packaging", "pypi", "orchestrate-kit"],
+      lesson="Measure in the configuration you SHIP -- an editable install "
+             "is not the configuration a real user runs."),
+
+    M(key="F-repocontext-string-root", kind="finding", phase="5-orchestrate-kit",
+      title="RepoContext(root=<str>) silently broke plugin detection",
+      problem="root is typed Path, but Python doesn't enforce dataclass type "
+              "hints -- a plain string is an easy, natural mistake.",
+      root_cause="str has no .rglob(); detect() raised AttributeError, which "
+                 "Evaluator.applicable() catches and discards BY DESIGN (a "
+                 "broken detector must not abort the whole run) -- so a "
+                 "plugin just never applied, with no error anywhere.",
+      chosen="__post_init__ coerces root to Path",
+      evidence="Found while building examples/python-quality-plugin and "
+               "actually using the API, not by reading it.",
+      blast_radius="Any plugin author who wrote root=\"...\" instead of "
+                   "root=Path(\"...\") -- silently, not loudly.",
+      files=["orchestrate_kit/evaluator/plugin_api.py"],
+      tags=["robustness", "api-design", "orchestrate-kit"],
+      lesson="A type hint is documentation, not enforcement. A catch-all "
+             "exception handler on a detector needs a matching test proving "
+             "the input it's meant to tolerate doesn't ALSO hide a bug."),
+
+    M(key="F-memory-search-substring-match", kind="finding", phase="5-orchestrate-kit",
+      title="Memory search matched substrings, not tokens",
+      problem="'dataset ids ... in executable code' matched a retrieval "
+              "decision entry on the word 'code' alone.",
+      root_cause="'code' in 'cross-encoder' is true -- plain substring "
+                 "containment, not token equality.",
+      chosen="Tokenize with a 4-suffix stemmer before comparing",
+      evidence="Caught by a test asserting a multi-term query does NOT "
+               "surface an entry sharing only one incidental word.",
+      blast_radius="Every prior-art search in the mentor and the CLI's "
+                   "why-not/recall commands.",
+      files=["orchestrate_kit/memory/store.py"],
+      tags=["search", "false-positive", "orchestrate-kit"],
+      depends_on=["F-leakage-false-blocker"],
+      lesson="The same false-positive class this project already recorded "
+             "once (matching inside the wrong boundary) recurred in a "
+             "completely different module. A lesson learned once needs a "
+             "test, not just a memory entry, or it recurs."),
+
+    M(key="F-bench-stdout-pollution", kind="finding", phase="5-orchestrate-kit",
+      title="bench.py's memory measurement leaked a command's stdout into its own report",
+      problem="Measuring peak memory by calling a CLI handler in-process let "
+              "that handler's print() output land in bench.py's own stdout.",
+      root_cause="contextlib.redirect_stdout was missing around the "
+                 "in-process call.",
+      chosen="Redirect stdout during the in-process measurement",
+      evidence="Found by actually piping `bench.py > BENCHMARKS.md` and "
+               "reading the file, not by reviewing the code.",
+      blast_radius="Every regenerated BENCHMARKS.md until fixed -- a random "
+                   "command's raw output in the middle of a markdown table.",
+      files=["orchestrate_kit/bench.py"],
+      tags=["tooling", "false-positive", "orchestrate-kit"],
+      lesson="A tool that reports on other commands needs to be tested by "
+             "running it, not by reading it -- the bug was invisible in the "
+             "source and obvious in the output."),
+
+    M(key="F-mutable-default-incomplete-detector", kind="finding", phase="5-orchestrate-kit",
+      title="A new static-analysis audit's own docstring claimed a false scope boundary",
+      problem="The mutable-default-argument audit's first draft claimed "
+              "`list()`/`set()`/`dict()` calls were 'deliberately not "
+              "flagged' -- stated as a scope decision.",
+      root_cause="That claim was simply wrong: a no-arg constructor call "
+                 "shares the exact same evaluate-once-at-def-time bug as a "
+                 "literal [] or {}. It was an oversight, not a defensible "
+                 "boundary.",
+      chosen="Detect literals AND no-arg list()/dict()/set() calls; keep "
+             "calls-WITH-arguments out of scope on a stated, honest "
+             "precision tradeoff instead",
+      evidence="A test written to confirm the false-positive guard instead "
+               "caught the false-negative before the audit shipped.",
+      blast_radius="Would have shipped an audit that missed half of its own "
+                   "named bug class.",
+      files=["examples/python-quality-plugin/python_quality.py"],
+      tags=["audit-quality", "orchestrate-kit"],
+      lesson="Write the test for the boundary you claim BEFORE trusting the "
+             "docstring that states it."),
+]
+
+ALL = (BUILD + MULTIMODAL + META + HARDENING + REJECTIONS + PROCESS
+       + ORCHESTRATE_KIT_ITSELF)
 
 
 def seed(memory) -> int:

@@ -572,3 +572,67 @@ def test_run_evaluate_exits_2_on_a_real_blocker(tmp_path):
         capture_output=True, text=True, timeout=60)
     assert result.returncode == 2
     assert "BLOCKER" in result.stdout
+
+
+# ===================================================== memory file-linkage
+def test_verify_files_reports_coverage_honestly(memory, tmp_path):
+    """Most entries describe a different codebase (the historical Orchestrate
+    submission) and correctly have no `files` -- verify_files must not treat
+    that as either a pass or a failure, just report it."""
+    report = memory.verify_files(Path(__file__).resolve().parents[1])
+    assert report["with_files"] > 0
+    assert report["without_files"] > 0
+    assert report["with_files"] + report["without_files"] == report["total_entries"]
+
+
+def test_verify_files_detects_a_real_missing_file(tmp_path):
+    from orchestrate_kit.memory.store import EngineeringMemory, MemoryEntry
+
+    mem = EngineeringMemory(tmp_path / "m.json")
+    mem.add(MemoryEntry(key="X", title="t", files=["does/not/exist.py"]))
+    report = mem.verify_files(tmp_path)
+    assert report["missing"] == [("X", "does/not/exist.py")]
+
+
+def test_orchestrate_kit_native_entries_cite_real_files(memory):
+    """The 5 entries describing this repo's own development must cite paths
+    that exist NOW, in this checkout -- not aspirational ones."""
+    repo_root = Path(__file__).resolve().parents[1]
+    native = [e for e in memory.entries.values() if e.phase == "5-orchestrate-kit"]
+    assert len(native) >= 5
+    for e in native:
+        assert e.files, f"{e.key} describes orchestrate_kit's own code but cites no file"
+        for f in e.files:
+            assert (repo_root / f).exists(), f"{e.key} cites missing path: {f}"
+
+
+def test_cli_memory_verify_fails_on_a_real_missing_file(tmp_path):
+    from orchestrate_kit.cli import main
+    from orchestrate_kit.memory.store import EngineeringMemory, MemoryEntry
+
+    mpath = tmp_path / "m.json"
+    mem = EngineeringMemory(mpath)
+    mem.add(MemoryEntry(key="X", title="t", files=["nope.py"]))
+    mem.save()
+
+    (tmp_path / "repo").mkdir()
+    rc = main(["--memory", str(mpath), "memory", "verify"])
+    assert rc == 1
+
+
+# ===================================================== mentor budget cap
+def test_mentor_caps_benchmarks_shown_per_entry(tmp_path):
+    from orchestrate_kit.memory.store import Benchmark, EngineeringMemory, MemoryEntry
+    from orchestrate_kit.mentor.engine import MAX_BENCHMARKS_SHOWN, Mentor
+
+    mem = EngineeringMemory(tmp_path / "m.json")
+    many = [Benchmark(f"metric{i}", after=str(i)) for i in range(MAX_BENCHMARKS_SHOWN + 3)]
+    mem.add(MemoryEntry(key="D-many", status="rejected", title="many benchmarks",
+                        reconsider_if="never", benchmarks=many,
+                        tags=["retrieval"]))
+    m = Mentor(mem)
+    text = m.render(m.advise("swap the retrieval ranking method"))
+    shown = text.count("measured: metric")
+    assert shown == MAX_BENCHMARKS_SHOWN
+    assert "+3 more" in text
+    assert "orchestrate memory recall D-many" in text

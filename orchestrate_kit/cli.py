@@ -241,6 +241,21 @@ def cmd_memory(args) -> int:
                 print(f"  lesson  : {e.lesson}")
         return 0
 
+    if args.sub == "verify":
+        repo = Path(getattr(args, "repo", ".") or ".").resolve()
+        report = mem.verify_files(repo)
+        print(f"{report['with_files']}/{report['total_entries']} entries cite files "
+              f"({report['without_files']} describe a different codebase or "
+              f"have no file reference — not counted as failures)")
+        if report["missing"]:
+            print(f"\n{len(report['missing'])} cited path(s) do not exist:")
+            for key, f in report["missing"]:
+                print(f"  {key}: {f}")
+            return 1
+        print("all cited files exist" if report["with_files"] else
+              "nothing to verify — no entry cites a file in this repo")
+        return 0
+
     if args.sub == "add":
         entry = MemoryEntry(
             key=args.key, kind=args.kind, status=args.status,
@@ -375,6 +390,7 @@ def build_parser() -> argparse.ArgumentParser:
     ms = mem.add_subparsers(dest="sub", required=True)
     ms.add_parser("seed", help="write the reference corpus")
     ms.add_parser("list", help="list every entry")
+    ms.add_parser("verify", help="do the files entries cite still exist?")
     for name in ("recall", "why-not"):
         s = ms.add_parser(name)
         s.add_argument("query", nargs="+")

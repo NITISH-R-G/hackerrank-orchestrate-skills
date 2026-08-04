@@ -17,6 +17,7 @@ project's own standard refuses to make.
 | [0003](./0003-engineering-memory.md) | Engineering Memory as a first-class artifact, not tribal knowledge | Accepted |
 | [0004](./0004-negative-controls.md) | Every audit requires a negative control before it ships | Accepted |
 | [0005](./0005-plugin-architecture.md) | Black-box-first plugin architecture | Accepted |
+| [0006](./0006-agent-memory-comparative-review.md) | Comparative review against TencentDB Agent Memory — what was adopted, what wasn't, and why | Accepted |
 
 ## Writing a new one
 

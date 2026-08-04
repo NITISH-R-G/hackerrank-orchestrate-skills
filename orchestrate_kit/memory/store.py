@@ -178,6 +178,39 @@ class EngineeringMemory:
         scored = [(e.score(topic), e) for e in self.rejections()]
         return [e for s, e in sorted(scored, key=lambda x: -x[0]) if s >= 0.25]
 
+    # ------------------------------------------------------------- freshness
+    def verify_files(self, repo_root: Path) -> dict:
+        """Do the files an entry cites still exist?
+
+        Deliberately scoped to existence, not staleness-by-content: an entry
+        has no timestamp to compare a file's mtime against, so claiming to
+        detect "this decision may now be out of date" would be a guess
+        dressed up as a check. Existence is the honest, buildable subset of
+        that idea -- inspired by the general principle that a memory system
+        should relate its records to the code they describe, not just store
+        prose, without claiming the deeper impact-analysis this repo cannot
+        actually perform on a flat JSON store.
+
+        Returns a report, not a pass/fail -- most entries legitimately have
+        no `files`, because they describe decisions in a DIFFERENT codebase
+        (the historical Orchestrate submission this repo's memory corpus was
+        seeded from). Silently treating "no files" as "verified" would be
+        exactly the kind of false-coverage this project's audits exist to
+        catch elsewhere.
+        """
+        with_files = [e for e in self.entries.values() if e.files]
+        missing: list[tuple[str, str]] = []
+        for e in with_files:
+            for f in e.files:
+                if not (repo_root / f).exists():
+                    missing.append((e.key, f))
+        return {
+            "total_entries": len(self.entries),
+            "with_files": len(with_files),
+            "without_files": len(self.entries) - len(with_files),
+            "missing": missing,
+        }
+
     # ---------------------------------------------------------------- graph
     def mermaid(self, focus: str = "") -> str:
         """Decision graph: records the branches NOT taken, which is precisely

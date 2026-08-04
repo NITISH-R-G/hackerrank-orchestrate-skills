@@ -29,6 +29,13 @@ from dataclasses import dataclass, field
 from ..memory.store import EngineeringMemory, MemoryEntry
 from .taxonomy import ProposalClass, Risk, classify
 
+# A report is read by a human in one sitting, not retrieved into a live
+# agent's context window -- but the underlying principle (don't let one
+# heavily-benchmarked prior-art entry crowd out every other consideration)
+# is the same one worth enforcing structurally rather than trusting entry
+# authors to self-limit.
+MAX_BENCHMARKS_SHOWN = 4
+
 VERDICTS = {
     "BLOCKED-BY-PRIOR-ART": "This was measured and rejected. Do not re-propose "
                             "it without meeting the stated reconsideration "
@@ -187,8 +194,16 @@ class Mentor:
             w(f"   [{flag}] {e.key}  {e.title}")
             if e.root_cause:
                 wrap(f"why: {e.root_cause}", "        ")
-            for b in e.benchmarks:
+            # Capped, not unbounded: an entry with many benchmarks would
+            # otherwise let one prior-art hit dominate the whole report. The
+            # cap is on DISPLAY only -- `orchestrate memory recall <key>`
+            # always shows the full record.
+            shown, extra = e.benchmarks[:MAX_BENCHMARKS_SHOWN], e.benchmarks[MAX_BENCHMARKS_SHOWN:]
+            for b in shown:
                 w(f"        measured: {b.line()}")
+            if extra:
+                w(f"        ... +{len(extra)} more -- "
+                  f"`orchestrate memory recall {e.key}`")
             if e.blast_radius:
                 wrap(f"blast radius: {e.blast_radius}", "        ")
             if e.status == "rejected" and e.reconsider_if:

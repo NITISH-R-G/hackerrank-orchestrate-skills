@@ -346,7 +346,7 @@ question. Fixed with tokenized matching; the test is
 | **[RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md)** | Final gate, ordered so the cheapest checks catch the worst defects |
 | **[RESEARCH.md](./RESEARCH.md)** | Sourcing for every claim, tagged `[evidence]` or `[inference]` |
 | **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ.md](./FAQ.md)** | Self-scoring rubric · common questions |
-| **[docs/adr/](./docs/adr/)** | 5 Architecture Decision Records for the biggest engineering calls (deterministic routing, constrained arbitration, Engineering Memory, negative controls, plugin architecture) — each cross-referenced to the `orchestrate memory recall` entry with the actual measurement behind it |
+| **[docs/adr/](./docs/adr/)** | 6 Architecture Decision Records for the biggest engineering calls (deterministic routing, constrained arbitration, Engineering Memory, negative controls, plugin architecture, and a comparative review against TencentDB Agent Memory) — each cross-referenced to the `orchestrate memory recall` entry with the actual measurement behind it |
 
 The `orchestrate_kit` corpus is the same knowledge in executable form. Where
 `TIMELINE.md` tells you dense embeddings lost, `orchestrate memory why-not

@@ -7,6 +7,37 @@ is not a breaking change to anything).
 
 ## [Unreleased]
 
+### Added
+- `orchestrate memory verify` — checks that the files a memory entry cites
+  still exist. Reports coverage honestly (most entries correctly have no
+  `files`, because they describe the historical Orchestrate submission's
+  codebase, not `orchestrate_kit`'s own) rather than treating "no files" as
+  either pass or fail.
+- 5 new Engineering Memory entries under phase `5-orchestrate-kit`,
+  documenting real, already-fixed defects in `orchestrate_kit`'s *own*
+  development this session (a packaging bug, a `RepoContext` robustness
+  gap, a memory-search substring-matching bug, a benchmark-script stdout
+  leak, and a static-analysis audit that shipped a wrong scope claim) —
+  the first entries in this corpus to describe this repository's own code
+  rather than the historical submission it was seeded from, and the first
+  to carry accurate `files` references.
+- Mentor reports now cap benchmarks shown per prior-art entry to 4
+  (`MAX_BENCHMARKS_SHOWN`), with an honest "+N more" pointer to the full
+  record via `orchestrate memory recall <key>`.
+- [`docs/adr/0006-agent-memory-comparative-review.md`](./docs/adr/0006-agent-memory-comparative-review.md)
+  — a full subsystem-by-subsystem comparison against
+  [TencentDB Agent Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory)
+  (MIT), reviewed as a candidate to replace this project's Engineering
+  Memory. Conclusion: they solve different problems (a multi-tenant,
+  DB-backed runtime memory service for live conversational agents, vs. a
+  curated, human-authored decision log for one codebase's own history) —
+  most of the storage/retrieval/access-control architecture was kept as
+  correctly scoped to this project's actual size and deployment model, and
+  two genuinely portable ideas (context-budget capping, relating memory
+  records to real code) were adopted in original form. See
+  [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) for what is and
+  isn't attributed.
+
 ### Fixed
 - `pyproject.toml` declared package-data as `../data/memory.json` — a path
   reaching outside the package directory, unsupported by setuptools. It
