@@ -264,6 +264,11 @@ def cmd_memory(args) -> int:
               f"provenance recorded — not counted as failures)")
         if commits_report["missing"]:
             ok = False
+            if commits_report["shallow_clone"]:
+                print("  NOTE: this is a shallow git clone — a cited commit "
+                      "reported missing below may simply not be fetched, not "
+                      "invalid. Run `git fetch --unshallow` and retry before "
+                      "treating this as a real provenance failure.")
             print(f"  {len(commits_report['missing'])} cited commit(s) not found "
                   f"in this repository's history:")
             for key, c in commits_report["missing"]:

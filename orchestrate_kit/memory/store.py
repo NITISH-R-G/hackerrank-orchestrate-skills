@@ -244,9 +244,19 @@ class EngineeringMemory:
         Same honesty rule as verify_files: most entries have no `commit`
         because they describe a different codebase, and that is correctly
         NOT a failure -- only a cited commit that turns out not to exist is.
+
+        A shallow clone (`git clone --depth N`, or GitHub Actions'
+        `actions/checkout` default) genuinely does not contain older commits
+        -- `git cat-file -e` correctly reports them missing, but "missing"
+        there means "not fetched," not "never existed." This shipped once
+        without the distinction: the first real CI run for this method
+        reported 5 valid commits as missing, because the checkout step
+        hadn't been given `fetch-depth: 0`. `is_shallow` makes that failure
+        mode self-diagnosing instead of looking like corrupted provenance.
         """
         import subprocess
 
+        is_shallow = (repo_root / ".git" / "shallow").exists()
         with_commit = [e for e in self.entries.values() if e.commit]
         missing: list[tuple[str, str]] = []
         for e in with_commit:
@@ -256,6 +266,7 @@ class EngineeringMemory:
             if result.returncode != 0:
                 missing.append((e.key, e.commit))
         return {
+            "shallow_clone": is_shallow,
             "total_entries": len(self.entries),
             "with_commit": len(with_commit),
             "without_commit": len(self.entries) - len(with_commit),

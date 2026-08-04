@@ -17,6 +17,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # full history -- memory verify_commits() checks real commit SHAs, which a shallow clone would not contain
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
@@ -94,6 +96,8 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # full history -- memory verify_commits() checks real commit SHAs, which a shallow clone would not contain
       - uses: actions/setup-python@v7
         with:
           python-version: "3.13"

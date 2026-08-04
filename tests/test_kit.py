@@ -714,3 +714,12 @@ def test_versions_match():
     pv = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.M).group(1)
     iv = re.search(r'^__version__\s*=\s*"([^"]+)"', init, re.M).group(1)
     assert pv == iv, f"pyproject.toml={pv!r} vs __init__.py={iv!r}"
+
+
+def test_verify_commits_reports_shallow_clone_state(memory):
+    """The regression test for the real bug this shipped with: the first
+    real CI run reported 5 valid commits as missing because the checkout
+    was shallow. `shallow_clone` makes that failure mode self-diagnosing."""
+    report = memory.verify_commits(Path(__file__).resolve().parents[1])
+    assert "shallow_clone" in report
+    assert report["shallow_clone"] is False  # this checkout has full history
