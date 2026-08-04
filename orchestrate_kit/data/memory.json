@@ -1562,7 +1562,7 @@
       "blast_radius": "Would have broken the first real PyPI install -- invisible in every local test run before that.",
       "impact": "",
       "reconsider_if": "",
-      "commit": "",
+      "commit": "d87004d0acfa4b5ddc98c55635f861a3b8d14400",
       "files": [
         "orchestrate_kit/memory/store.py",
         "pyproject.toml"
@@ -1591,7 +1591,7 @@
       "blast_radius": "Any plugin author who wrote root=\"...\" instead of root=Path(\"...\") -- silently, not loudly.",
       "impact": "",
       "reconsider_if": "",
-      "commit": "",
+      "commit": "a80fe25be20fbb688e675a2917be0515a112216c",
       "files": [
         "orchestrate_kit/evaluator/plugin_api.py"
       ],
@@ -1619,7 +1619,7 @@
       "blast_radius": "Every prior-art search in the mentor and the CLI's why-not/recall commands.",
       "impact": "",
       "reconsider_if": "",
-      "commit": "",
+      "commit": "d87004d0acfa4b5ddc98c55635f861a3b8d14400",
       "files": [
         "orchestrate_kit/memory/store.py"
       ],
@@ -1649,7 +1649,7 @@
       "blast_radius": "Every regenerated BENCHMARKS.md until fixed -- a random command's raw output in the middle of a markdown table.",
       "impact": "",
       "reconsider_if": "",
-      "commit": "",
+      "commit": "a80fe25be20fbb688e675a2917be0515a112216c",
       "files": [
         "orchestrate_kit/bench.py"
       ],
@@ -1677,7 +1677,7 @@
       "blast_radius": "Would have shipped an audit that missed half of its own named bug class.",
       "impact": "",
       "reconsider_if": "",
-      "commit": "",
+      "commit": "a80fe25be20fbb688e675a2917be0515a112216c",
       "files": [
         "examples/python-quality-plugin/python_quality.py"
       ],

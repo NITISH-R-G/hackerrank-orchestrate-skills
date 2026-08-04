@@ -8,11 +8,25 @@ is not a breaking change to anything).
 ## [Unreleased]
 
 ### Added
-- `orchestrate memory verify` — checks that the files a memory entry cites
-  still exist. Reports coverage honestly (most entries correctly have no
-  `files`, because they describe the historical Orchestrate submission's
-  codebase, not `orchestrate_kit`'s own) rather than treating "no files" as
+- `orchestrate memory verify` — checks that the files AND the commit a
+  memory entry cites still exist / are reachable in this repository's
+  history. Reports coverage honestly (most entries correctly have neither,
+  because they describe the historical Orchestrate submission's codebase,
+  not `orchestrate_kit`'s own) rather than treating "nothing cited" as
   either pass or fail.
+- `EngineeringMemory.centrality()` / `.referenced_by()` — how many other
+  entries a given entry is depended-on or superseded-by, surfaced as
+  `<-N` in `orchestrate memory list`. A cheap, honest substitute for
+  "importance" that doesn't require guessing at a weighting scheme this
+  corpus is too small to tune meaningfully — mined from a comparative
+  review of TencentDB Agent Memory's "memory importance/scoring" concept,
+  scaled down to something this project can actually justify. See
+  [`docs/adr/0006`](./docs/adr/0006-agent-memory-comparative-review.md),
+  updated with a full concept-by-concept mining pass (memory hierarchy,
+  lifecycle, evolution, compression, importance, relationships/graph,
+  provenance, retrieval planning, quality, scoring, consolidation, aging,
+  conflict resolution, indexing, summarization, structured metadata) —
+  most explicitly rejected with a stated reason, three adopted.
 - 5 new Engineering Memory entries under phase `5-orchestrate-kit`,
   documenting real, already-fixed defects in `orchestrate_kit`'s *own*
   development this session (a packaging bug, a `RepoContext` robustness

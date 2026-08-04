@@ -636,3 +636,65 @@ def test_mentor_caps_benchmarks_shown_per_entry(tmp_path):
     assert shown == MAX_BENCHMARKS_SHOWN
     assert "+3 more" in text
     assert "orchestrate memory recall D-many" in text
+
+
+# ===================================================== provenance & centrality
+def test_verify_commits_reports_coverage_honestly(memory):
+    repo_root = Path(__file__).resolve().parents[1]
+    report = memory.verify_commits(repo_root)
+    assert report["with_commit"] > 0
+    assert report["without_commit"] > 0
+    assert not report["missing"]
+
+
+def test_verify_commits_detects_a_fake_sha(tmp_path):
+    from orchestrate_kit.memory.store import EngineeringMemory, MemoryEntry
+
+    mem = EngineeringMemory(tmp_path / "m.json")
+    mem.add(MemoryEntry(key="X", title="t", commit="0" * 40))
+    report = mem.verify_commits(Path(__file__).resolve().parents[1])
+    assert report["missing"] == [("X", "0" * 40)]
+
+
+def test_orchestrate_kit_native_entries_cite_real_commits(memory):
+    repo_root = Path(__file__).resolve().parents[1]
+    native = [e for e in memory.entries.values() if e.phase == "5-orchestrate-kit"]
+    for e in native:
+        assert e.commit, f"{e.key} has no commit provenance"
+    report = memory.verify_commits(repo_root)
+    assert not [k for k, _ in report["missing"] if k in {e.key for e in native}]
+
+
+def test_centrality_counts_depends_on_and_supersedes_edges(tmp_path):
+    from orchestrate_kit.memory.store import EngineeringMemory, MemoryEntry
+
+    mem = EngineeringMemory(tmp_path / "m.json")
+    mem.add(MemoryEntry(key="A", title="root"))
+    mem.add(MemoryEntry(key="B", title="child", depends_on=["A"]))
+    mem.add(MemoryEntry(key="C", title="child2", depends_on=["A"]))
+    mem.add(MemoryEntry(key="D", title="successor", supersedes="A"))
+    counts = mem.centrality()
+    assert counts["A"] == 3
+    assert counts["B"] == 0
+
+
+def test_referenced_by_names_the_actual_citing_entries(tmp_path):
+    from orchestrate_kit.memory.store import EngineeringMemory, MemoryEntry
+
+    mem = EngineeringMemory(tmp_path / "m.json")
+    mem.add(MemoryEntry(key="A", title="root"))
+    mem.add(MemoryEntry(key="B", title="child", depends_on=["A"]))
+    assert mem.referenced_by("A") == ["B"]
+    assert mem.referenced_by("B") == []
+
+
+def test_cli_memory_list_shows_centrality(memory, capsys):
+    from orchestrate_kit.cli import main
+    import json as _json
+
+    p = Path(memory.path)
+    rc = main(["--memory", str(p), "memory", "list"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "<-" in out
+    assert "referenced by N other entries" in out

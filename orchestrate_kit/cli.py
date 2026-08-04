@@ -198,10 +198,13 @@ def cmd_memory(args) -> int:
         if not mem.entries:
             print("empty. run `orchestrate memory seed`")
             return 0
+        central = mem.centrality()
         for e in sorted(mem.entries.values(), key=lambda x: (x.phase, x.key)):
             flag = "REJ" if e.status == "rejected" else "   "
-            print(f"{flag} {e.key:<32} {e.title[:44]}")
-        print(f"\n{len(mem.entries)} entries · {len(mem.rejections())} rejections")
+            cited = f" <-{central[e.key]}" if central.get(e.key) else ""
+            print(f"{flag} {e.key:<32} {e.title[:44]}{cited}")
+        print(f"\n{len(mem.entries)} entries · {len(mem.rejections())} rejections "
+              f"· '<-N' = referenced by N other entries (depends_on/supersedes)")
         print("tags: " + ", ".join(f"{k}({v})" for k, v in list(mem.tags().items())[:14]))
         return 0
 
@@ -243,18 +246,33 @@ def cmd_memory(args) -> int:
 
     if args.sub == "verify":
         repo = Path(getattr(args, "repo", ".") or ".").resolve()
-        report = mem.verify_files(repo)
-        print(f"{report['with_files']}/{report['total_entries']} entries cite files "
-              f"({report['without_files']} describe a different codebase or "
-              f"have no file reference — not counted as failures)")
-        if report["missing"]:
-            print(f"\n{len(report['missing'])} cited path(s) do not exist:")
-            for key, f in report["missing"]:
-                print(f"  {key}: {f}")
-            return 1
-        print("all cited files exist" if report["with_files"] else
-              "nothing to verify — no entry cites a file in this repo")
-        return 0
+        ok = True
+
+        files_report = mem.verify_files(repo)
+        print(f"{files_report['with_files']}/{files_report['total_entries']} entries "
+              f"cite files ({files_report['without_files']} describe a different "
+              f"codebase or have no file reference — not counted as failures)")
+        if files_report["missing"]:
+            ok = False
+            print(f"  {len(files_report['missing'])} cited path(s) do not exist:")
+            for key, f in files_report["missing"]:
+                print(f"    {key}: {f}")
+
+        commits_report = mem.verify_commits(repo)
+        print(f"{commits_report['with_commit']}/{commits_report['total_entries']} "
+              f"entries cite a commit ({commits_report['without_commit']} have no "
+              f"provenance recorded — not counted as failures)")
+        if commits_report["missing"]:
+            ok = False
+            print(f"  {len(commits_report['missing'])} cited commit(s) not found "
+                  f"in this repository's history:")
+            for key, c in commits_report["missing"]:
+                print(f"    {key}: {c}")
+
+        if ok:
+            print("clean" if (files_report["with_files"] or commits_report["with_commit"])
+                  else "nothing to verify — no entry cites a file or commit in this repo")
+        return 0 if ok else 1
 
     if args.sub == "add":
         entry = MemoryEntry(

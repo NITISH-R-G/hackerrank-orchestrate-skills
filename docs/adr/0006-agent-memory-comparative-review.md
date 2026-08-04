@@ -92,3 +92,46 @@ a size a human can skim (revisit retrieval), or a real, measured gap
 appears in how skills relate to the findings that justify them (revisit
 the skill-lifecycle idea, with numbers, the way every other entry in this
 memory system is required to.)
+
+---
+
+## Addendum: mining the architecture concept by concept
+
+The table above compared subsystems. This addendum treats
+TencentDB Agent Memory purely as a source of *engineering concepts* —
+ignoring their runtime (database, TypeScript, ACLs, distributed services)
+entirely — and checks each one against this project independently. Facts
+about their system are drawn from their public README; anything not stated
+there is marked unknown rather than guessed.
+
+| Concept | How Tencent uses it | Do we have an equivalent? | Would it genuinely help? | Verdict |
+|---|---|---|---|---|
+| **Memory hierarchy** | L0 raw conversation → L1 atoms → L2 scenarios → L3 persona; each layer distilled from the one below | No — an entry is authored directly at what would be their L2/L3 level | No: there is no raw L0 material to distill FROM. Building the layers with nothing under them is scaffolding, not architecture | **Rejected.** Solves an ingestion problem we don't have. |
+| **Memory lifecycle** | private → reviewed → team-shared; ownership and status tracked | Partially — `status` (accepted/rejected/superseded) IS a lifecycle | A private/shared distinction needs more than one person to mean anything | **Kept minimal**, correctly — see ADR-0003, ROADMAP.md. |
+| **Memory evolution** | assets get new versions as understanding changes | `supersedes` field, rendered in the decision graph | Already present and tested | **Already satisfied** — no action needed. |
+| **Memory compression** | not explicitly named as a mechanism in the README beyond the layering itself | `Benchmark.line()` renders a full record's measurement as one compact string; `orchestrate memory list` shows title-only vs `recall` showing full detail | Already present in a form suited to a static store (no distillation pipeline needed to compress something a human wrote concisely to begin with) | **Already satisfied.** |
+| **Memory importance** | usage counts are tracked and shown per asset in the panel | None — no ranking beyond text relevance existed before this pass | Yes: an entry many others depend on is more load-bearing, and that's cheap and honest to compute from data already in the schema | **Adopted** — `centrality()` / `<-N` in `memory list`. |
+| **Memory relationships / graph** | assets have ownership and version relationships; not described as a full dependency graph in the README | `depends_on`, `supersedes`, rendered as a real Mermaid decision graph (`orchestrate graph`) | Already present, and arguably more explicit than what's documented of theirs | **Already satisfied.** |
+| **Provenance** | ownership (who), version, status shown per asset | `commit` field existed in the schema, populated on 0/40 entries before this pass | Yes — concretely: "which commit made this true" is checkable and cheap | **Adopted** — `commit=` on the 5 orchestrate_kit-native entries, `verify_commits()`. |
+| **Retrieval planning** | quick L2/L3 bootstrap first; fall back to precise BM25+vector+RRF over L1/L0 only when needed | `memory list` (compressed overview) vs `memory recall <key>` (full detail) vs `search()` (ranked, capped) is already a two-tier plan of the same SHAPE | Already present, at a complexity appropriate to ~45 entries vs their unbounded corpus | **Already satisfied** (independently arrived at, not copied). |
+| **Memory quality** | Skills carry validation rules and trigger boundaries before being trusted | `reconsider_if` is enforced (refused without one) for rejections only; non-rejected findings have no equivalent enforcement | A real, if minor, gap — but low urgency: every entry is already reviewed by the sole author before merging | **Not adopted.** Flagged in ROADMAP.md rather than built on a guess at what "enough evidence" means for a non-rejection. |
+| **Memory scoring** | implicit in BM25+vector+RRF ranking | `score()` term-overlap ranking exists; no separate "quality score" | Covered by "importance" above; a second, different scoring axis isn't justified without a demonstrated need | **Not adopted**, folded into the importance decision above. |
+| **Memory consolidation** | not explicitly described as automatic merging in the README | None | At ~45 human-curated entries with one author, duplicate/near-duplicate entries haven't occurred — the failure mode consolidation prevents doesn't exist here | **Rejected**, explicitly: no evidence of the problem it would solve. |
+| **Memory aging / expiration** | usage counts tracked; no explicit TTL/expiration mechanism stated in the README | None | Rejected on a design-principle ground, not a laziness one: any usage-tracking mechanism would require mutating `memory.json` on every read (search/recall), which conflicts with ADR-0003's explicit design goal — a store meant to be reviewed in a git diff, not one that changes on every CLI invocation | **Rejected**, with a stated principled conflict, not "not built yet." |
+| **Conflict resolution** | not described in enough detail in the README to characterize honestly | None | At one author reviewing every entry before it merges, the review step IS the conflict-resolution mechanism | **Rejected** — the human-curation model already provides this. |
+| **Memory indexing** | BM25 + vector, chosen for corpus sizes large enough to need it | Term-overlap over the full in-memory corpus | This project's OWN prior measurement (`D-dense-retrieval`) already tested exactly this question on a comparably small, curated corpus and found no benefit | **Rejected**, on this project's own prior evidence, not assumption. |
+| **Automatic summarization** | conversations are distilled into atoms/scenarios by an async pipeline (implies a model call) | None — entries are authored directly, already concise | Would require an LLM call, breaking the zero-runtime-dependency, offline-by-design guarantee this whole toolkit is built on, to summarize material that's already hand-written and concise | **Rejected**, on a stated architectural constraint, not oversight. |
+| **Structured metadata** | ownership, version, status, visibility, usage counts | `kind`, `status`, `tags`, `phase`, `blast_radius`, `reconsider_if`, `depends_on`, `supersedes`, `files`, `commit` | Already extensive; this pass populated two previously-unused fields (`files`, `commit`) rather than adding new ones | **Already satisfied** — this pass improved population, not the schema. |
+
+### What this addendum changes about the verdict above
+
+Nothing reverses. Of 18 concepts examined, **3 were genuinely adopted**
+(context-budget capping, file-linkage/`verify_files`, and — new in this
+pass — commit-provenance/`verify_commits` plus `centrality()`), **6 were
+already independently satisfied** by this project's existing design in a
+form suited to its own scale, and **9 were explicitly rejected**, each
+with a stated reason tied to either a scale mismatch, a missing
+precondition (no raw material, no multiple users), or a documented,
+already-measured prior decision. None were rejected by default or by
+inertia — that distinction is the entire point of doing this exercise
+concept-by-concept instead of subsystem-by-subsystem.

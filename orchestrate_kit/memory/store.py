@@ -178,6 +178,32 @@ class EngineeringMemory:
         scored = [(e.score(topic), e) for e in self.rejections()]
         return [e for s, e in sorted(scored, key=lambda x: -x[0]) if s >= 0.25]
 
+    # ------------------------------------------------------------- centrality
+    def referenced_by(self, key: str) -> list[str]:
+        """Which other entries name this one via depends_on or supersedes.
+
+        Not a ranking signal folded into search() -- deliberately kept
+        separate and explicit. An entry many others build on is worth
+        knowing about, but "cited often" and "relevant to THIS query" are
+        different questions; conflating them would make search results
+        harder to reason about, not easier."""
+        return sorted(e.key for e in self.entries.values()
+                      if key in e.depends_on or e.supersedes == key)
+
+    def centrality(self) -> dict[str, int]:
+        """How many other entries reference each entry. A cheap, honest
+        substitute for "importance": load-bearing entries -- the ones a
+        reversal would ripple through -- surface without guessing at a
+        weighting scheme this corpus is too small to tune meaningfully."""
+        counts = {k: 0 for k in self.entries}
+        for e in self.entries.values():
+            for dep in e.depends_on:
+                if dep in counts:
+                    counts[dep] += 1
+            if e.supersedes in counts:
+                counts[e.supersedes] += 1
+        return counts
+
     # ------------------------------------------------------------- freshness
     def verify_files(self, repo_root: Path) -> dict:
         """Do the files an entry cites still exist?
@@ -208,6 +234,31 @@ class EngineeringMemory:
             "total_entries": len(self.entries),
             "with_files": len(with_files),
             "without_files": len(self.entries) - len(with_files),
+            "missing": missing,
+        }
+
+    def verify_commits(self, repo_root: Path) -> dict:
+        """Do the commits an entry cites (provenance) actually exist in this
+        repository's history?
+
+        Same honesty rule as verify_files: most entries have no `commit`
+        because they describe a different codebase, and that is correctly
+        NOT a failure -- only a cited commit that turns out not to exist is.
+        """
+        import subprocess
+
+        with_commit = [e for e in self.entries.values() if e.commit]
+        missing: list[tuple[str, str]] = []
+        for e in with_commit:
+            result = subprocess.run(
+                ["git", "cat-file", "-e", f"{e.commit}^{{commit}}"],
+                cwd=repo_root, capture_output=True, timeout=10)
+            if result.returncode != 0:
+                missing.append((e.key, e.commit))
+        return {
+            "total_entries": len(self.entries),
+            "with_commit": len(with_commit),
+            "without_commit": len(self.entries) - len(with_commit),
             "missing": missing,
         }
 

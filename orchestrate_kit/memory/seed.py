@@ -696,6 +696,7 @@ ORCHESTRATE_KIT_ITSELF = [
       blast_radius="Would have broken the first real PyPI install -- "
                    "invisible in every local test run before that.",
       files=["orchestrate_kit/memory/store.py", "pyproject.toml"],
+      commit="d87004d0acfa4b5ddc98c55635f861a3b8d14400",
       tags=["packaging", "pypi", "orchestrate-kit"],
       lesson="Measure in the configuration you SHIP -- an editable install "
              "is not the configuration a real user runs."),
@@ -714,6 +715,7 @@ ORCHESTRATE_KIT_ITSELF = [
       blast_radius="Any plugin author who wrote root=\"...\" instead of "
                    "root=Path(\"...\") -- silently, not loudly.",
       files=["orchestrate_kit/evaluator/plugin_api.py"],
+      commit="a80fe25be20fbb688e675a2917be0515a112216c",
       tags=["robustness", "api-design", "orchestrate-kit"],
       lesson="A type hint is documentation, not enforcement. A catch-all "
              "exception handler on a detector needs a matching test proving "
@@ -731,6 +733,7 @@ ORCHESTRATE_KIT_ITSELF = [
       blast_radius="Every prior-art search in the mentor and the CLI's "
                    "why-not/recall commands.",
       files=["orchestrate_kit/memory/store.py"],
+      commit="d87004d0acfa4b5ddc98c55635f861a3b8d14400",
       tags=["search", "false-positive", "orchestrate-kit"],
       depends_on=["F-leakage-false-blocker"],
       lesson="The same false-positive class this project already recorded "
@@ -750,6 +753,7 @@ ORCHESTRATE_KIT_ITSELF = [
       blast_radius="Every regenerated BENCHMARKS.md until fixed -- a random "
                    "command's raw output in the middle of a markdown table.",
       files=["orchestrate_kit/bench.py"],
+      commit="a80fe25be20fbb688e675a2917be0515a112216c",
       tags=["tooling", "false-positive", "orchestrate-kit"],
       lesson="A tool that reports on other commands needs to be tested by "
              "running it, not by reading it -- the bug was invisible in the "
@@ -772,6 +776,7 @@ ORCHESTRATE_KIT_ITSELF = [
       blast_radius="Would have shipped an audit that missed half of its own "
                    "named bug class.",
       files=["examples/python-quality-plugin/python_quality.py"],
+      commit="a80fe25be20fbb688e675a2917be0515a112216c",
       tags=["audit-quality", "orchestrate-kit"],
       lesson="Write the test for the boundary you claim BEFORE trusting the "
              "docstring that states it."),
