@@ -828,3 +828,44 @@ def test_transcript_never_claims_to_predict_the_real_score(capsys):
         assert "NOT a prediction" in out
     finally:
         p.unlink()
+
+
+def test_analyzer_penalizes_repeated_boilerplate():
+    """Found by actually trying to break the analyzer: 3 copies of one
+    rubric-matching sentence scored 86.25/100 before this penalty existed.
+    Regex pattern-matching is gameable by anyone who reads the source --
+    everyone, since this is open source -- and this closes the cheapest
+    version of that gap."""
+    from orchestrate_kit.transcript.analyzer import analyze
+
+    gamed = " ".join(["I chose X over Y because Z. I tested it: 5 of 5 "
+                      "passed. The gate must run before the model."] * 3)
+    a = analyze(gamed)
+    assert a.weighted_score < 60
+    assert any("REPETITION PENALTY" in n for n in a.notes)
+
+
+def test_analyzer_does_not_penalize_a_legitimate_transcript():
+    from orchestrate_kit.transcript.analyzer import analyze
+
+    a = analyze(STRONG_TRANSCRIPT)
+    assert not any("REPETITION" in n for n in a.notes)
+    assert a.weighted_score > 75
+
+
+def test_composer_flags_low_confidence_matches():
+    """A caller previously had no way to tell 'this blueprint genuinely
+    fits' from 'this was just first in a tie of zero-scoring blueprints'."""
+    from orchestrate_kit.transcript.composer import compose
+
+    cp = compose("zzz qqq wwww nonsense")
+    assert cp.low_confidence
+    assert cp.match_score == 0
+
+
+def test_composer_does_not_flag_a_real_match():
+    from orchestrate_kit.transcript.composer import compose
+
+    cp = compose("design the retrieval architecture")
+    assert not cp.low_confidence
+    assert cp.match_score > 0

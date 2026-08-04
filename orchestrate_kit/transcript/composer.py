@@ -27,7 +27,14 @@ class ComposedPrompt:
     blueprint: Blueprint
     text: str
     unfilled: list[str]           # placeholders that had no value supplied
+    match_score: int = 0          # shared tokens between the goal and the
+                                   # chosen blueprint -- 0 means "nothing
+                                   # matched, this is a fallback, not a fit"
     memory_hits: list[MemoryEntry] = field(default_factory=list)
+
+    @property
+    def low_confidence(self) -> bool:
+        return self.match_score == 0
 
 
 _PLACEHOLDER = re.compile(r"\{(\w+)\}")
@@ -64,30 +71,51 @@ def select(goal: str, stage: str = "") -> Blueprint:
     ('code' in 'cross-encoder'); it recurred here because the fix wasn't
     reused, only the lesson was remembered in prose. Caught by actually
     running a realistic query, not by review."""
+    return select_scored(goal, stage)[0]
+
+
+def select_scored(goal: str, stage: str = "") -> tuple[Blueprint, int]:
+    """Same as `select`, but also returns the match score -- so a caller
+    can tell a confident match from a fallback. `select()` alone silently
+    returned the "best of a bad lot" with no signal that nothing actually
+    matched, which is a real gap: a caller has no way to know whether
+    "repo-audit" was chosen because it fit, or because it was simply
+    first in a tie of zero-scoring blueprints. Found the same way the
+    substring bug was -- by using the function for something real, not by
+    inspection."""
     pool = [b for b in BLUEPRINTS if not stage or b.stage == stage] or BLUEPRINTS
     terms = _tokens(goal)
+    if not terms:
+        return pool[0], 0
 
     def score(b: Blueprint) -> int:
         hay = _tokens(f"{b.label} {b.key} {b.stage} {' '.join(b.targets)}")
         return len(terms & hay)
 
-    return max(pool, key=score) if terms else pool[0]
+    best = max(pool, key=score)
+    return best, score(best)
 
 
 def compose(goal: str, values: dict[str, str] | None = None,
            stage: str = "", memory: EngineeringMemory | None = None,
            memory_limit: int = 3) -> ComposedPrompt:
-    bp = select(goal, stage)
+    bp, match_score = select_scored(goal, stage)
     text, unfilled = _fill(bp.template, values or {})
     hits = memory.search(goal, limit=memory_limit) if memory else []
-    return ComposedPrompt(bp, text, unfilled, hits)
+    return ComposedPrompt(bp, text, unfilled, match_score, hits)
 
 
 def render(cp: ComposedPrompt) -> str:
     out = [f"BLUEPRINT: {cp.blueprint.label}  ({cp.blueprint.stage})",
-          f"targets: {', '.join(cp.blueprint.targets)}", "",
-          "WHY THIS SCORES WELL", "  " + cp.blueprint.why_it_scores, "",
-          "PROMPT", "  " + cp.text]
+          f"targets: {', '.join(cp.blueprint.targets)}"]
+    if cp.low_confidence:
+        out += ["", "LOW CONFIDENCE MATCH: nothing in your goal matched this "
+               "blueprint's label, key, stage, or targets -- this is the "
+               "least-bad option in the pool, not a real fit. Run "
+               "`orchestrate transcript blueprints` and pick manually, or "
+               "narrow the goal."]
+    out += ["", "WHY THIS SCORES WELL", "  " + cp.blueprint.why_it_scores, "",
+           "PROMPT", "  " + cp.text]
     if cp.unfilled:
         out += ["", "UNFILLED PLACEHOLDERS (fill these in before using it)",
                "  " + ", ".join(f"<{u}>" for u in cp.unfilled)]

@@ -165,7 +165,29 @@ def analyze(transcript: str) -> TranscriptAnalysis:
 
     weighted = sum(r.score * r.dimension.weight for r in results)
 
+    # Repetition penalty. Found by actually trying to break this analyzer:
+    # three copies of one boilerplate sentence containing every keyword
+    # scored 86/100 before this existed. Regex pattern-matching is
+    # inherently gameable by anyone who reads the source -- which is
+    # everyone, since this is open source -- and a tool that claims to
+    # measure engineering judgment while rewarding copy-paste would be
+    # worse than useless. This doesn't make gaming impossible; it makes
+    # the CHEAPEST form of gaming (repeat the rubric's own vocabulary)
+    # visibly not work, which is the honest ceiling a heuristic can reach.
+    sentences = [s.strip().lower() for s in re.split(r"[.!?]+", transcript)
+                if len(s.strip()) > 15]
+    unique_ratio = (len(set(sentences)) / len(sentences)) if sentences else 1.0
+    if sentences and unique_ratio < 0.7:
+        penalty = (0.7 - unique_ratio) * 100
+        weighted = max(0.0, weighted - penalty)
+
     notes = []
+    if sentences and unique_ratio < 0.7:
+        notes.append(
+            f"REPETITION PENALTY APPLIED: only {unique_ratio:.0%} of "
+            f"sentences are unique. Repeating rubric-matching phrases "
+            f"does not raise this score, and duplicated content is "
+            f"exactly what a human reviewer would notice fastest too.")
     if turns > 15 and weighted < 50:
         notes.append(
             "High turn count with a low score: HackerRank's own published "

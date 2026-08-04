@@ -35,6 +35,31 @@ answers. A transcript claiming "I measured X" scores the same whether X
 was actually measured or invented. Use it as a self-review checklist, not
 a scoreboard.
 
+**Stated plainly, found by actually trying to break it, not assumed
+safe:** the analyzer is regex pattern-matching, which means it can be
+gamed by stuffing rubric-matching phrases into a transcript with no real
+engineering behind them. A repetition penalty closes the cheapest version
+of that (three copies of one boilerplate sentence dropped from 86 to 50
+once the penalty landed), but a determined, novel-phrasing gamer could
+still beat pattern-matching that isn't checking truth, only shape. This
+is not a solved problem — it's the same honesty boundary every heuristic
+text analyzer in this project states (`judge/scoring.py`'s docstring says
+it explicitly too): it trains form, truth is your job, and a fluent
+answer full of invented specifics scores well here and would fail a real
+technical follow-up.
+
+## Coverage against the published rubric
+
+| Rubric dimension | Coverage | Why |
+|---|---|---|
+| Direction & architecture ownership | **Partial** | Detects ownership language and named alternatives; cannot verify the alternative was genuinely considered, not invented after the fact |
+| Technical specificity & constraint | **Partial** | Detects named entities and stated constraints; cannot verify a named model/library was actually used correctly |
+| Iteration & verification | **Partial** | Detects reported measurements and reversals; cannot verify a claimed test was actually run |
+| Safety, edge case & quality awareness | **Partial** | Detects named risks and mechanisms; cannot verify the mechanism actually exists in the code |
+| Genuine semantic understanding of *whether a claim is true* | **Impossible without an LLM call** (and even then, unverified without the actual repository + a real grading model) — explicitly not attempted, not faked |
+| A trained scoring model calibrated to real HackerRank grades | **Impossible without ground-truth graded transcripts**, which don't exist publicly — explicitly not attempted, not faked |
+| Multi-turn conversation-level reasoning (e.g. does turn 8 contradict turn 3) | **Missing** — the analyzer scores the transcript as one block of text, not turn-by-turn. Buildable without an LLM (a real gap, not declined on principle) — see `ROADMAP.md` |
+
 ## Commands
 
 ```bash

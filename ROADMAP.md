@@ -21,6 +21,16 @@ is worse than one that's honest about not having them.
       in this list is more valuable once `pip install orchestrate-kit`
       actually works — cloning a repo is real friction that a roadmap item
       can just remove.
+- [ ] **Turn-level transcript analysis.** `orchestrate transcript analyze`
+      currently scores an entire transcript as one block of text — it
+      cannot detect a later turn contradicting an earlier one (the same
+      contradiction problem `ARCHITECTURE_EVOLUTION.md` §6 already names
+      for Engineering Memory itself). Buildable without an LLM call: split
+      on turn boundaries, apply the existing pattern set per-turn, flag a
+      turn whose ownership claim contradicts an earlier turn's stated
+      choice. A real gap, not declined on principle — deferred because it
+      needs its own negative-control test suite before shipping, not
+      because it's architecturally hard.
 - [x] **Coverage measurement in CI**, reported honestly (a number with no
       target attached, not a claimed threshold that hasn't been earned).
       Current measured total: **72%** (`pytest --cov=orchestrate_kit`).
