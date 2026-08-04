@@ -31,6 +31,21 @@ is worse than one that's honest about not having them.
       choice. A real gap, not declined on principle — deferred because it
       needs its own negative-control test suite before shipping, not
       because it's architecturally hard.
+- [ ] **Prompt linter and prompt diff.** A CI-style gate check on a
+      PROMPT before you send it (constraints/deliverables/verification/
+      success-criteria/rollback present or missing), and a mechanical
+      before/after diff of which gates a prompt passes after an edit.
+      Both reuse the pattern-detection infrastructure already built for
+      transcripts; neither needs an LLM call. Deferred because they need
+      their own tested negative controls before shipping — a linter with
+      untested gates is worse than no linter — not because they're
+      architecturally hard or against this project's principles.
+- [ ] **Prompt-evolution history.** Showing how a blueprint's template
+      changed across real revisions, with what was learned at each step.
+      Only honest if built from real git history of blueprint changes
+      (`git log -- orchestrate_kit/transcript/blueprints.py`), not a
+      fabricated "v1 -> v2 -> v3" narrative per blueprint. Deferred until
+      there's enough real revision history to show something true.
 - [x] **Coverage measurement in CI**, reported honestly (a number with no
       target attached, not a claimed threshold that hasn't been earned).
       Current measured total: **72%** (`pytest --cov=orchestrate_kit`).

@@ -59,6 +59,30 @@ technical follow-up.
 | Genuine semantic understanding of *whether a claim is true* | **Impossible without an LLM call** (and even then, unverified without the actual repository + a real grading model) — explicitly not attempted, not faked |
 | A trained scoring model calibrated to real HackerRank grades | **Impossible without ground-truth graded transcripts**, which don't exist publicly — explicitly not attempted, not faked |
 | Multi-turn conversation-level reasoning (e.g. does turn 8 contradict turn 3) | **Missing** — the analyzer scores the transcript as one block of text, not turn-by-turn. Buildable without an LLM (a real gap, not declined on principle) — see `ROADMAP.md` |
+| Prompt linting / prompt diff / prompt-evolution history | **Deferred, not declined** — these need their own test suite before shipping (a prompt linter with untested gates is worse than no linter), and ran out of session time to build and verify properly rather than being architecturally hard or against this project's principles. See `ROADMAP.md`. |
+
+## What changed after actually trying to break the first version
+
+Output is now a lint report (PASS/WARNING/FAIL bands, coverage bars), not
+a leading score — the score still exists underneath but is never the
+headline. Two new signals: **causal connectives** (because/therefore/so
+we reverted/blast radius) boost the Iteration dimension only ON TOP OF a
+real measurement or reversal already present — a connective with nothing
+to connect earns nothing, so "because" alone can't be farmed for points.
+And a **7-node evidence chain** (Problem → Hypothesis → Implementation →
+Measurement → Regression → Decision → Verification) is checked for
+presence and rough sequential order — stated honestly as presence-plus-
+order, not a real causal graph, because building the latter needs
+language understanding this project doesn't have offline.
+
+`orchestrate transcript compose` now appends a **self-verifying
+checklist** after the generated prompt — "when it finishes, verify: ..."
+— derived structurally from the rubric behaviors the chosen blueprint
+targets, not written per-blueprint by hand. A real grammar bug in the
+first version of this ("Did it a sentence stating..." — the rubric's
+`observable_as` field is a noun phrase, not a verb phrase) was found by
+running it and reading the output, not by review, and is now a regression
+test.
 
 ## Commands
 

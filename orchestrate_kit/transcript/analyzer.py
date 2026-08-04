@@ -70,6 +70,47 @@ _VAGUE_SAFETY = re.compile(
     r"\b(?:we )?(?:made sure|ensured|handled) (?:it'?s?|it is) safe\b|"
     r"\bshould be (?:escalated|safe|handled)\b", re.I)
 
+# Causal connectives -- not magic words, but the connective tissue that
+# turns two isolated observations into engineering reasoning. "We tried X.
+# It hurt Y. We reverted" is a causal chain; the same three facts stated
+# with no connective is a list of unrelated events. Detecting the
+# connective is a cheap, honest proxy for "these facts were reasoned
+# about together," not a claim of understanding the reasoning itself.
+_CAUSAL = re.compile(
+    r"\bbecause\b|\btherefore\b|\bwhich caused\b|\bafter measuring\b|"
+    r"\bwe reverted\b|\bthis (?:reduced|increased|regressed|broke|fixed)\b|"
+    r"\bcounterfactual\b|\bblast radius\b|\bas a result\b|\bso (?:we|i)\b",
+    re.I)
+
+# The seven-node evidence chain: Problem -> Hypothesis -> Implementation ->
+# Measurement -> Regression -> Decision -> Verification. Presence of a
+# pattern for each node is checked, and so is rough SEQUENTIAL order (does
+# a "problem" signal appear before a "verification" signal, roughly).
+# That is deliberately a weak proxy for a real causal graph -- actually
+# building one would mean parsing which measurement caused which decision,
+# which needs real language understanding this project doesn't have
+# offline. Presence-plus-order is the honest, buildable subset: it can't
+# confirm the chain is REAL, only that the vocabulary for each link
+# appears in a plausible sequence, which is harder to fake by accident
+# than any single keyword and is reported as exactly that, not as proof.
+_CHAIN_NODES: list[tuple[str, re.Pattern]] = [
+    ("Problem", re.compile(
+        r"\b(the (?:problem|issue|task) (?:is|was)|need(?:ed)? to|"
+        r"had to (?:solve|fix|handle))\b", re.I)),
+    ("Hypothesis", re.compile(
+        r"\bi (?:think|thought|expect(?:ed)?|assum(?:ed|e))\b|"
+        r"\bmight\b|\bshould (?:help|work|fix)\b", re.I)),
+    ("Implementation", re.compile(
+        r"\bi (?:built|wrote|implement(?:ed)?|add(?:ed)?)\b|"
+        r"\bwe (?:built|wrote|implemented)\b", re.I)),
+    ("Measurement", _MEASUREMENT),
+    ("Regression", _REVERSAL),
+    ("Decision", _OWNERSHIP),
+    ("Verification", re.compile(
+        r"\bverif(?:y|ied|ication)\b|\bconfirm(?:ed)?\b|\bre-?ran\b|"
+        r"\bran it again\b|\bchecked (?:it|that)\b", re.I)),
+]
+
 _PATTERNS: dict[str, tuple[re.Pattern, re.Pattern | None]] = {
     "direction": (_OWNERSHIP, _TOOL_NARRATION),
     "direction_alt": (_ALTERNATIVE, None),
@@ -89,12 +130,64 @@ class BehaviorHit:
     present: bool
 
 
+def verdict_for(score: float) -> str:
+    """Categorical band, not a number to lead with. A developer reads
+    'WARNING: constraint specificity could improve' faster than they
+    reason about the difference between a 61 and a 74."""
+    if score >= 70:
+        return "PASS"
+    if score >= 40:
+        return "WARNING"
+    return "FAIL"
+
+
 @dataclass
 class DimensionResult:
     dimension: Dimension
-    score: float                 # 0-100
+    score: float                 # 0-100, retained for the coverage bar --
+                                 # never the headline
     hits: list[BehaviorHit] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
+
+    @property
+    def verdict(self) -> str:
+        return verdict_for(self.score)
+
+
+@dataclass
+class ChainNode:
+    name: str
+    present: bool
+
+
+@dataclass
+class EvidenceChain:
+    nodes: list[ChainNode]
+    in_order: bool          # do present nodes appear in roughly the right sequence?
+
+    @property
+    def complete(self) -> bool:
+        return all(n.present for n in self.nodes)
+
+    @property
+    def present_count(self) -> int:
+        return sum(1 for n in self.nodes if n.present)
+
+
+def detect_chain(transcript: str) -> EvidenceChain:
+    """Problem -> Hypothesis -> Implementation -> Measurement -> Regression
+    -> Decision -> Verification. Presence-plus-order, not a real causal
+    graph -- see the module docstring above _CHAIN_NODES for exactly what
+    this can and cannot claim."""
+    positions: list[tuple[str, int]] = []
+    for name, pattern in _CHAIN_NODES:
+        m = pattern.search(transcript)
+        positions.append((name, m.start() if m else -1))
+
+    nodes = [ChainNode(name, pos >= 0) for name, pos in positions]
+    found = [pos for _, pos in positions if pos >= 0]
+    in_order = found == sorted(found)
+    return EvidenceChain(nodes, in_order)
 
 
 @dataclass
@@ -103,7 +196,13 @@ class TranscriptAnalysis:
     dimensions: list[DimensionResult]
     word_count: int
     turn_count: int
+    chain: EvidenceChain
+    causal_connectives: int
     notes: list[str] = field(default_factory=list)
+
+    @property
+    def overall_verdict(self) -> str:
+        return verdict_for(self.weighted_score)
 
 
 def _count(pattern: re.Pattern) -> int:
@@ -144,7 +243,15 @@ def analyze(transcript: str) -> TranscriptAnalysis:
         elif dim.key == "iteration":
             meas = _count(_MEASUREMENT)
             rev = _count(_REVERSAL)
-            score = min(100, 20 * meas + 25 * rev)
+            causal = _count(_CAUSAL)
+            # A causal connective doesn't earn points alone -- "because" in
+            # a sentence with no measurement or reversal nearby isn't
+            # evidence of anything. It's a small bonus ON TOP of a real
+            # measurement/reversal signal, rewarding "I measured X, so I
+            # reverted" over "I measured X" and "I reverted" as unconnected
+            # facts, without letting the connective alone move the score.
+            causal_bonus = 5 * min(causal, meas + rev)
+            score = min(100, 20 * meas + 25 * rev + causal_bonus)
             hits = [
                 BehaviorHit(dim.behaviors[0], meas, meas > 0),
                 BehaviorHit(dim.behaviors[1], rev, rev > 0),
@@ -201,4 +308,13 @@ def analyze(transcript: str) -> TranscriptAnalysis:
                      "find evidence in, not necessarily because the work "
                      "itself was thin.")
 
-    return TranscriptAnalysis(weighted, results, len(words), turns, notes)
+    chain = detect_chain(transcript)
+    if chain.present_count >= 5 and not chain.in_order:
+        notes.append(
+            "Evidence-chain vocabulary is mostly present but not in a "
+            "plausible order (Problem before Verification, etc.) -- this "
+            "is a weak signal, not proof the reasoning doesn't connect, "
+            "but a chain in order is a stronger signal than one that isn't.")
+
+    return TranscriptAnalysis(weighted, results, len(words), turns, chain,
+                              _count(_CAUSAL), notes)

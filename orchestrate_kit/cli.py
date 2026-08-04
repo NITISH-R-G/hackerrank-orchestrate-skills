@@ -180,26 +180,65 @@ def cmd_transcript(args) -> int:
     if args.tsub == "analyze":
         text = Path(args.file).read_text(encoding="utf-8", errors="replace")
         a = analyze(text)
-        print(f"weighted score: {a.weighted_score:.1f}/100  "
-              f"({a.word_count} words, {a.turn_count} turn(s))")
+
+        print(f"ENGINEERING TRANSCRIPT AUDIT   [{a.overall_verdict}]")
+        print(f"  ({a.word_count} words, {a.turn_count} turn(s), "
+              f"{a.causal_connectives} causal connective(s))")
         print()
+        print("COVERAGE")
         for d in a.dimensions:
-            bar = "#" * int(d.score // 10) + "." * (10 - int(d.score // 10))
-            print(f"  {d.dimension.label:<38} {bar} {d.score:>5.1f}  "
-                  f"(weight {d.dimension.weight:.0%})")
-            if d.missing:
-                print(f"      missing: {', '.join(d.missing)}")
+            filled = int(d.score // 10)
+            bar = "█" * filled + "░" * (10 - filled)
+            print(f"  {d.dimension.label:<38} {bar} {d.score:>3.0f}%  "
+                  f"weight {d.dimension.weight:.0%}")
+        print()
+
+        passed = [d for d in a.dimensions if d.verdict == "PASS"]
+        warned = [d for d in a.dimensions if d.verdict == "WARNING"]
+        failed = [d for d in a.dimensions if d.verdict == "FAIL"]
+        if passed:
+            print("PASS")
+            for d in passed:
+                print(f"  ✓ {d.dimension.label}")
+        if warned:
+            print("WARNING")
+            for d in warned:
+                print(f"  • {d.dimension.label}"
+                      + (f" -- missing: {', '.join(d.missing)}" if d.missing else ""))
+        if failed:
+            print("FAIL")
+            for d in failed:
+                print(f"  ✗ {d.dimension.label}"
+                      + (f" -- missing: {', '.join(d.missing)}" if d.missing else ""))
+
+        print()
+        print("EVIDENCE CHAIN  (Problem -> Hypothesis -> Implementation -> "
+              "Measurement -> Regression -> Decision -> Verification)")
+        chain_str = "  ".join(
+            (f"✓{n.name}" if n.present else f"✗{n.name}")
+            for n in a.chain.nodes)
+        print(f"  {chain_str}")
+        print(f"  {a.chain.present_count}/7 present"
+              + (", in plausible order" if a.chain.in_order and a.chain.present_count > 1
+                 else ""))
+        print("  Presence-plus-order, not a real causal graph -- this checks "
+              "whether the vocabulary for each link appears in a plausible "
+              "sequence, not that the reasoning genuinely connects them.")
+
         if a.notes:
             print()
+            print("NOTES")
             for n in a.notes:
-                print(f"  NOTE: {n}")
+                print(f"  • {n}")
+
         print()
         print("This scores the SHAPE of the transcript -- ownership "
               "language, named alternatives, reported measurements, named "
-              "risk mechanisms -- not whether the underlying claims are "
-              "true, and it is NOT a prediction of your real HackerRank "
-              "score (no ground-truth graded transcript exists to "
-              "calibrate against). Use it as a self-review checklist.")
+              "risk mechanisms, causal connectives -- not whether the "
+              "underlying claims are true, and it is NOT a prediction of "
+              "your real HackerRank score (no ground-truth graded "
+              "transcript exists to calibrate against). Use it as a "
+              "self-review checklist, not a scoreboard.")
         return 0
 
     if args.tsub == "compose":

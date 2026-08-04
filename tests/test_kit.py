@@ -869,3 +869,78 @@ def test_composer_does_not_flag_a_real_match():
     cp = compose("design the retrieval architecture")
     assert not cp.low_confidence
     assert cp.match_score > 0
+
+
+def test_verdict_bands_not_raw_score():
+    from orchestrate_kit.transcript.analyzer import verdict_for
+
+    assert verdict_for(85) == "PASS"
+    assert verdict_for(55) == "WARNING"
+    assert verdict_for(10) == "FAIL"
+
+
+def test_causal_connectives_boost_iteration_only_with_real_signal():
+    """A causal word alone, with no measurement or reversal nearby, must
+    not move the score -- only ON TOP of a real signal."""
+    from orchestrate_kit.transcript.analyzer import analyze
+
+    bare_causal = "Because of this, therefore, as a result, so we did it."
+    a = analyze(bare_causal)
+    iteration = next(d for d in a.dimensions if d.dimension.key == "iteration")
+    assert iteration.score == 0
+
+
+def test_evidence_chain_detects_present_nodes():
+    from orchestrate_kit.transcript.analyzer import detect_chain
+
+    text = ("The problem was routing accuracy. I tested it: 26/29 correct. "
+           "I reverted the vector index. I chose BM25. I verified the fix.")
+    chain = detect_chain(text)
+    present = {n.name for n in chain.nodes if n.present}
+    assert {"Measurement", "Regression", "Decision", "Verification"} <= present
+
+
+def test_evidence_chain_reports_incomplete_honestly():
+    from orchestrate_kit.transcript.analyzer import detect_chain
+
+    chain = detect_chain("we built a thing")
+    assert not chain.complete
+    assert chain.present_count < 7
+
+
+def test_verification_checklist_is_grammatically_derived_not_fabricated():
+    """Regression test for a real bug: 'Did it {observable_as}?' produced
+    'Did it a sentence stating...' because observable_as is a noun phrase,
+    not a verb phrase. Found by actually running it and reading the output."""
+    from orchestrate_kit.transcript.composer import verification_checklist
+    from orchestrate_kit.transcript.blueprints import BY_KEY
+
+    items = verification_checklist(BY_KEY["architecture-tradeoff"])
+    assert items
+    for item in items:
+        assert not item.lower().startswith("did it a "), item
+        assert not item.lower().startswith("did it an "), item
+
+
+def test_every_blueprint_produces_a_nonempty_checklist():
+    from orchestrate_kit.transcript.composer import verification_checklist
+    from orchestrate_kit.transcript.blueprints import BLUEPRINTS
+
+    for b in BLUEPRINTS:
+        assert verification_checklist(b), f"{b.key} has an empty checklist"
+
+
+def test_cli_analyze_shows_lint_style_output_not_bare_score(capsys):
+    from orchestrate_kit.cli import main
+
+    p = Path(__file__).resolve().parents[1] / "tests" / "_lint_fixture.txt"
+    p.write_text(STRONG_TRANSCRIPT, encoding="utf-8")
+    try:
+        rc = main(["transcript", "analyze", str(p)])
+        out = capsys.readouterr().out
+        assert rc == 0
+        assert "ENGINEERING TRANSCRIPT AUDIT" in out
+        assert "EVIDENCE CHAIN" in out
+        assert "PASS" in out
+    finally:
+        p.unlink()

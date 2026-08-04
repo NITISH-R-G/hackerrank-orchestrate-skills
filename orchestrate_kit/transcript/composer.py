@@ -96,6 +96,31 @@ def select_scored(goal: str, stage: str = "") -> tuple[Blueprint, int]:
     return best, score(best)
 
 
+def verification_checklist(bp: Blueprint) -> list[str]:
+    """A self-verification checklist for AFTER the agent responds --
+    derived structurally from the rubric behaviors the blueprint targets
+    (rubric.py's Behavior.observable_as), not invented per-blueprint.
+    Every item traces back to a named, published rubric dimension; nothing
+    here is a generic "did it go well?" question."""
+    from .rubric import BY_KEY
+
+    items = []
+    for key in bp.targets:
+        dim = BY_KEY.get(key)
+        if not dim:
+            continue
+        for b in dim.behaviors:
+            # `observable_as` is a noun phrase describing evidence (e.g.
+            # "a sentence stating what was chosen instead of, and why"),
+            # not a verb phrase -- "Did it {observable_as}?" produced
+            # grammatically broken checklist items ("Did it a sentence...").
+            # Found the same way every other bug in this module was: by
+            # actually running it and reading the output.
+            items.append(f"Confirm present: {b.observable_as}  "
+                        f"({dim.label})")
+    return items
+
+
 def compose(goal: str, values: dict[str, str] | None = None,
            stage: str = "", memory: EngineeringMemory | None = None,
            memory_limit: int = 3) -> ComposedPrompt:
@@ -116,6 +141,10 @@ def render(cp: ComposedPrompt) -> str:
                "narrow the goal."]
     out += ["", "WHY THIS SCORES WELL", "  " + cp.blueprint.why_it_scores, "",
            "PROMPT", "  " + cp.text]
+    checklist = verification_checklist(cp.blueprint)
+    if checklist:
+        out += ["", "WHEN IT FINISHES, VERIFY:"]
+        out += [f"  [ ] {item}" for item in checklist]
     if cp.unfilled:
         out += ["", "UNFILLED PLACEHOLDERS (fill these in before using it)",
                "  " + ", ".join(f"<{u}>" for u in cp.unfilled)]
