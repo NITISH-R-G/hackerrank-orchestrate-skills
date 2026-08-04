@@ -3,6 +3,11 @@
 Ranked by expected impact, not by ease. Updated as items land — see
 [CHANGELOG.md](./CHANGELOG.md) for what's already shipped.
 
+For the memory-system-specific items below, see
+[ARCHITECTURE_EVOLUTION.md](./ARCHITECTURE_EVOLUTION.md) for the measured
+trigger condition each one activates on — "not now" there always comes
+with the specific threshold that would make it "now."
+
 No dates. This is a single-maintainer project; a roadmap with fake deadlines
 is worse than one that's honest about not having them.
 

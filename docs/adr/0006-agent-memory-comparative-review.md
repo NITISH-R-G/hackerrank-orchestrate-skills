@@ -5,6 +5,10 @@
 (MIT license). No code from that project is included here — see
 [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) for exactly what is
 and isn't attributed, and why.
+**See also:** [ARCHITECTURE_EVOLUTION.md](../../ARCHITECTURE_EVOLUTION.md)
+reopens every concept rejected below from first principles, against a
+5-year, thousands-of-entries, multi-organization scale, with a measured
+trigger for each one.
 
 ## Context
 
