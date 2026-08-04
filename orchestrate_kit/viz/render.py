@@ -202,6 +202,35 @@ def submission_pipeline() -> str:
 """ + THEME
 
 
+def transcript_pipeline() -> str:
+    """How a HackerRank chat transcript goes from raw log to self-review,
+    and how a blueprint goes from goal to a prompt that demonstrates the
+    rubric's own criteria."""
+    return HEADER + """flowchart TD
+  T["raw chat transcript"] --> A["orchestrate transcript analyze"]
+  A --> D1["Direction & ownership -- 35%"]
+  A --> D2["Technical specificity -- 25%"]
+  A --> D3["Iteration & verification -- 25%"]
+  A --> D4["Safety & edge-case awareness -- 15%"]
+  D1 --> W["weighted score + missing behaviours"]
+  D2 --> W
+  D3 --> W
+  D4 --> W
+  W --> N["NOTE: not a score prediction --<br/>no ground-truth graded transcript<br/>exists to calibrate against"]
+
+  G["plain-English goal"] --> S["orchestrate transcript compose"]
+  S --> B["select a blueprint<br/>(token match, not substring --<br/>the same class of bug memory<br/>search already fixed once)"]
+  B --> P["fill placeholders with<br/>YOUR real inputs"]
+  M[("Engineering Memory")] -.-> S
+  S -.-> M
+  P --> OUT["a prompt that makes the rubric's<br/>own criteria the literal output<br/>format of your next message"]
+
+  class N gate;
+  class W,OUT out;
+  class M,B det;
+""" + THEME
+
+
 DIAGRAMS = {
     "architecture": ("System architecture (trust-coloured)", architecture),
     "trust": ("Modality trust boundaries", trust_boundaries),
@@ -210,6 +239,7 @@ DIAGRAMS = {
     "audit": ("Audit pipeline", audit_pipeline),
     "regression": ("Regression / re-pin flow", regression_flow),
     "submission": ("Release and submission pipeline", submission_pipeline),
+    "transcript": ("Transcript scoring + prompt composer flow", transcript_pipeline),
 }
 
 

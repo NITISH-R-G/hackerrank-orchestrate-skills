@@ -173,6 +173,50 @@ def cmd_mentor(args) -> int:
     return 2 if advice.verdict == "BLOCKED-BY-PRIOR-ART" else 0
 
 
+def cmd_transcript(args) -> int:
+    from .transcript.analyzer import analyze
+    from .transcript.composer import compose, render
+
+    if args.tsub == "analyze":
+        text = Path(args.file).read_text(encoding="utf-8", errors="replace")
+        a = analyze(text)
+        print(f"weighted score: {a.weighted_score:.1f}/100  "
+              f"({a.word_count} words, {a.turn_count} turn(s))")
+        print()
+        for d in a.dimensions:
+            bar = "#" * int(d.score // 10) + "." * (10 - int(d.score // 10))
+            print(f"  {d.dimension.label:<38} {bar} {d.score:>5.1f}  "
+                  f"(weight {d.dimension.weight:.0%})")
+            if d.missing:
+                print(f"      missing: {', '.join(d.missing)}")
+        if a.notes:
+            print()
+            for n in a.notes:
+                print(f"  NOTE: {n}")
+        print()
+        print("This scores the SHAPE of the transcript -- ownership "
+              "language, named alternatives, reported measurements, named "
+              "risk mechanisms -- not whether the underlying claims are "
+              "true, and it is NOT a prediction of your real HackerRank "
+              "score (no ground-truth graded transcript exists to "
+              "calibrate against). Use it as a self-review checklist.")
+        return 0
+
+    if args.tsub == "compose":
+        mem = _memory(args)
+        cp = compose(" ".join(args.goal), stage=args.stage or "", memory=mem)
+        print(render(cp))
+        return 0
+
+    if args.tsub == "blueprints":
+        from .transcript.blueprints import BLUEPRINTS
+        for b in BLUEPRINTS:
+            print(f"{b.key:<22} {b.stage:<14} {b.label}")
+        return 0
+
+    return 1
+
+
 def cmd_interview(args) -> int:
     from .judge.engine import run_terminal
     return run_terminal(
@@ -408,6 +452,21 @@ def build_parser() -> argparse.ArgumentParser:
                    help="rotate all four judges")
     i.add_argument("--seed", type=int, default=None)
     i.set_defaults(fn=cmd_interview)
+
+    t = sub.add_parser("transcript",
+                       help="chat-transcript scoring, prompt blueprints, composer")
+    ts = t.add_subparsers(dest="tsub", required=True)
+    ta = ts.add_parser("analyze",
+                       help="score a transcript file against the published rubric")
+    ta.add_argument("file")
+    tc = ts.add_parser("compose",
+                       help="generate a prompt from a blueprint + Engineering Memory")
+    tc.add_argument("goal", nargs="+")
+    tc.add_argument("--stage", default="",
+                    choices=["", "understanding", "design", "planning",
+                             "implementation", "verification", "release"])
+    ts.add_parser("blueprints", help="list every available blueprint")
+    t.set_defaults(fn=cmd_transcript, repo=".")
 
     mem = sub.add_parser("memory", help="institutional knowledge")
     ms = mem.add_subparsers(dest="sub", required=True)

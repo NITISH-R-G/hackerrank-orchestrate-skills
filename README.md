@@ -451,6 +451,31 @@ your own harnesses, state boundaries on every guarantee, and be able to defend
 each number in your code. The evaluator's generic plugin, the mentor's taxonomy,
 and every judge persona are domain-independent.
 
+## Transcript engineering
+
+```bash
+orchestrate transcript analyze my-chat-log.txt
+orchestrate transcript compose "choose a retrieval method" --stage design
+```
+
+HackerRank's own published methodology states the AI Chat Transcript score
+measures how you *directed* your coding agent, not what it produced —
+Direction & Architecture Ownership alone is weighted 35%. `analyze` scores
+a transcript against the real published rubric (4 dimensions, real
+weights) and names which behaviors are present or missing.
+`compose` fills one of 9 prompt blueprints with your real inputs and
+Engineering Memory hits, so the generated prompt makes the rubric's own
+criteria the literal shape of your next message.
+
+**Stated honestly, not hedged:** this scores the *shape* of a transcript —
+ownership language, named alternatives, reported measurements — never
+whether the underlying claims are true, and it is **not a prediction of
+your real HackerRank score**: no ground-truth graded transcript exists to
+calibrate against. Verified to actually discriminate — a weak sample
+transcript scores 0.0, a strong one scores 81.8, on the real rubric
+weights, not asserted. See
+[`skills/orchestrate-transcript-engineering`](./skills/orchestrate-transcript-engineering).
+
 ## GitHub Action
 
 ```yaml

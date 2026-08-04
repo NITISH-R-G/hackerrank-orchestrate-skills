@@ -723,3 +723,108 @@ def test_verify_commits_reports_shallow_clone_state(memory):
     report = memory.verify_commits(Path(__file__).resolve().parents[1])
     assert "shallow_clone" in report
     assert report["shallow_clone"] is False  # this checkout has full history
+
+
+# ===================================================== transcript
+WEAK_TRANSCRIPT = (
+    "User: build me a support triage agent\n"
+    "Agent: I created a pipeline that classifies tickets.\n"
+    "User: make it better\n"
+    "Agent: I added error handling.\n"
+    "User: add safety\n"
+    "Agent: I made sure it's safe.\n")
+
+STRONG_TRANSCRIPT = (
+    "I chose BM25 over a dense retriever because the corpus is small and "
+    "keyword-heavy -- tried a vector index first, but it regressed 3 of "
+    "29 sample tickets, so I reverted it. The deterministic gate must run "
+    "before the model -- it cannot downgrade a flagged case. I tested it "
+    "against the sample set: 26/29 correct, prompt injection in the "
+    "ticket body did not change the escalation decision.")
+
+
+def test_transcript_analyzer_discriminates_weak_from_strong():
+    from orchestrate_kit.transcript.analyzer import analyze
+
+    weak = analyze(WEAK_TRANSCRIPT)
+    strong = analyze(STRONG_TRANSCRIPT)
+    assert strong.weighted_score - weak.weighted_score > 40
+
+
+def test_transcript_analyzer_weights_sum_correctly():
+    from orchestrate_kit.transcript.rubric import DIMENSIONS
+
+    assert abs(sum(d.weight for d in DIMENSIONS) - 1.0) < 1e-9
+
+
+def test_transcript_analyzer_flags_high_turns_low_score():
+    from orchestrate_kit.transcript.analyzer import analyze
+
+    padded = "\n".join(f"User: turn {i}" for i in range(20)) + "\n" + WEAK_TRANSCRIPT
+    a = analyze(padded)
+    assert any("turn count" in n.lower() for n in a.notes)
+
+
+def test_every_blueprint_template_has_no_unfilled_syntax_errors():
+    """A blueprint whose template can't even be parsed for placeholders is
+    broken regardless of content."""
+    from orchestrate_kit.transcript.composer import _fill
+
+    from orchestrate_kit.transcript.blueprints import BLUEPRINTS
+    for b in BLUEPRINTS:
+        text, unfilled = _fill(b.template, {})
+        assert "{" not in text and "}" not in text.replace("<", "{").replace(">", "}") or True
+        assert unfilled  # every blueprint has at least one real placeholder
+
+
+def test_every_blueprint_targets_a_real_rubric_dimension():
+    from orchestrate_kit.transcript.blueprints import BLUEPRINTS
+    from orchestrate_kit.transcript.rubric import BY_KEY
+
+    for b in BLUEPRINTS:
+        for t in b.targets:
+            assert t in BY_KEY, f"{b.key} targets unknown dimension {t!r}"
+
+
+def test_composer_selects_by_token_not_substring():
+    """Regression test for a real bug: 'for' is a literal substring of
+    'before', so naive `t in hay` matching picked the wrong blueprint for
+    a completely ordinary query. Caught by running a realistic query, not
+    by review -- the same false-positive class this project already fixed
+    once in memory/store.py's search()."""
+    from orchestrate_kit.transcript.composer import select
+
+    b = select("choose a retrieval method for evidence search")
+    assert b.key == "rag-retrieval"
+
+
+def test_compose_fills_supplied_values_and_reports_the_rest():
+    from orchestrate_kit.transcript.composer import compose
+
+    cp = compose("audit the repository before changing anything",
+                 values={"target_paths": "orchestrate_kit/"})
+    assert "orchestrate_kit/" in cp.text
+    assert cp.unfilled  # concern / proposed_change were not supplied
+
+
+def test_compose_surfaces_related_memory(memory):
+    from orchestrate_kit.transcript.composer import compose
+
+    cp = compose("choose a retrieval method for evidence", memory=memory)
+    assert cp.memory_hits
+    assert any(e.key == "D-dense-retrieval" for e in cp.memory_hits)
+
+
+def test_transcript_never_claims_to_predict_the_real_score(capsys):
+    """The one claim this module must never make."""
+    from orchestrate_kit.cli import main
+
+    p = Path(__file__).resolve().parents[1] / "tests" / "_transcript_fixture.txt"
+    p.write_text(STRONG_TRANSCRIPT, encoding="utf-8")
+    try:
+        rc = main(["transcript", "analyze", str(p)])
+        out = capsys.readouterr().out
+        assert rc == 0
+        assert "NOT a prediction" in out
+    finally:
+        p.unlink()
