@@ -61,6 +61,13 @@ jobs:
           python -m orchestrate_kit graph > /dev/null
           python -m orchestrate_kit viz all --out /tmp/diagrams
 
+      - name: memory provenance (files + commits an entry cites must be real)
+        # MEMORY_GOVERNANCE.md's quality-gate section names this as a gap:
+        # `orchestrate memory verify` existed and worked but wasn't run in
+        # CI, so a deleted file or unreachable commit a future entry cites
+        # wouldn't be caught automatically. This closes that gap.
+        run: python -m orchestrate_kit memory verify
+
       - name: mentor must not silently degrade to PROCEED-for-everything
         shell: bash
         run: |

@@ -698,3 +698,19 @@ def test_cli_memory_list_shows_centrality(memory, capsys):
     assert rc == 0
     assert "<-" in out
     assert "referenced by N other entries" in out
+
+
+# ===================================================== version consistency
+def test_versions_match():
+    """pyproject.toml and __init__.py declared the same version by
+    discipline, not by a check -- DESIGN_INVARIANTS.md's enforcement map
+    claims this is checked, so it needs to actually be checked."""
+    import re
+
+    root = Path(__file__).resolve().parents[1]
+    pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
+    init = (root / "orchestrate_kit" / "__init__.py").read_text(encoding="utf-8")
+
+    pv = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.M).group(1)
+    iv = re.search(r'^__version__\s*=\s*"([^"]+)"', init, re.M).group(1)
+    assert pv == iv, f"pyproject.toml={pv!r} vs __init__.py={iv!r}"

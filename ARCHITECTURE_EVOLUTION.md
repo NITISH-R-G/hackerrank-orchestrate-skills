@@ -285,6 +285,29 @@ triggers from Part 1 have fired, and what the architecture looks like as
 a result. Moving between stages is driven by the measured triggers above,
 not a calendar.
 
+### Numeric trigger table
+
+The specific numbers, in one place, cross-referenced to the section that
+justifies each one — nothing below is picked round-number-first; every
+number here already appears attached to a reason in Part 1 or this
+document's other governance files.
+
+| Metric | Threshold | What activates | Justified in |
+|---|---:|---|---|
+| Memory entries | **100** | `files=`/`commit=` provenance stops being exceptional; `orchestrate memory verify` graduates from a CI check on 5 entries to a check that matters | `MEMORY_GOVERNANCE.md` |
+| Memory entries | **150** | Quality gate extends to every entry, not just rejections; duplicate-warning on `memory add` | §3, §4 |
+| Memory entries | **300** | Contradiction/conflict detection | §6 |
+| Memory entries | **500** | Digest/summary layer becomes worth building; retrieval re-measurement (lexical vs. dense/hybrid) on the *actual* corpus | §1 trigger B, §7 |
+| Memory entries | **1,000** | Automatic-summarization plugin extra becomes worth shipping, if the 30-minute review-time signal (below) also holds | §8 |
+| Maintainers | **2** | Write-protection policy (CODEOWNERS-enforced); quality gate extends (alt. trigger) | §2, §3 |
+| Maintainers | **3+** | Contradiction detection (alt. trigger) | §6 |
+| Maintainers | **5** | Formal governance (a real `GOVERNANCE.md`, not the "explicitly not planned" placeholder) becomes justified — see Stage 3 below |
+| Contributors (not necessarily maintainers) | **20** | RFC process gets its first real test as an actual coordination mechanism rather than a single-author formality | Stage 3 |
+| Plugins | **~10–20** | `PLUGIN_GOVERNANCE.md`'s Community tier gets its first real occupants | Stage 2/3 |
+| Plugins | **100** | A plugin *index* (searchable, not just linked from README) becomes worth building — the same "documentation gravity" problem `README.md`'s doc-map addresses for markdown files, recurring for plugins | Stage 3 |
+| Plugins | **500** | Plugin governance itself needs revisiting — at that volume, manual promotion review (`PLUGIN_GOVERNANCE.md`'s current process) stops scaling and needs its own tooling, ideally dogfooding `orchestrate_kit`'s own evaluator against plugin repositories | Stage 4 |
+| Review time for a new contributor's first full memory read-through | **~30 min** | Same digest-layer trigger as the 500-entry line — whichever fires first | §1, §8 |
+
 ### Stage 1 — Solo developer *(current)*
 
 - ~45–150 memory entries, one maintainer, one first-party plugin + one
@@ -310,8 +333,11 @@ contributor joins.
 - **Staleness-by-hash** (§5) is live from the first `files=`-bearing
   entry onward — it doesn't wait for Stage 2, it's cheap enough to ship
   as soon as it's built.
-- Storage, retrieval, and hierarchy are unchanged from Stage 1 — nothing
-  here yet requires them.
+- **Introduced:** quality gate, duplicate warning, write-protection policy,
+  staleness-by-hash.
+- **Stays unchanged:** storage (flat JSON), retrieval (term-overlap),
+  hierarchy (none), ACL (none) — nothing here yet requires them.
+- **Removed/deprecated:** nothing. Stage 2 is additive only.
 
 ### Stage 3 — Large community project
 
@@ -335,7 +361,28 @@ OR dozens of plugins/hundreds of ADRs exist.
 - Plugin ecosystem: the scaffold (`orchestrate plugin new`) and the
   negative-control requirement already scale to "hundreds of plugins"
   without change — that architecture was built plugin-first from
-  ADR-0005 onward specifically so this stage wouldn't need a redesign.
+  ADR-0005 onward specifically so this stage wouldn't need a redesign. A
+  searchable plugin index (numeric trigger table, ~100 plugins) is new
+  infrastructure, but additive — it doesn't change how a plugin is built.
+- Formal `GOVERNANCE.md` becomes justified once maintainer count reaches
+  **5** (numeric trigger table) — replacing `ROADMAP.md`'s current
+  "explicitly not planned" position, which is itself the correct call
+  *below* that threshold, not a permanent one.
+- **Introduced:** contradiction detection, measured retrieval upgrade (if
+  the re-measurement favors it — not assumed), digest layer (conditional
+  on the automation precondition), plugin index, formal governance.
+- **Stays unchanged:** the `MemoryEntry` schema itself, the plugin
+  contract, the CLI's Stable-tier surface — `STABILITY.md`'s guarantees
+  are exactly what should NOT need to change for a project to absorb 10x
+  growth, if the Stage 1/2 foundations were built correctly.
+- **Deprecated, conditionally:** term-overlap-only search, if and only if
+  the Stage 3 re-measurement genuinely shows a better alternative on the
+  real corpus — deprecated, not removed outright, per `STABILITY.md`'s
+  deprecation policy (one minor-version cycle of continued function before
+  removal).
+- **Removed:** nothing unconditionally. This project's own standard —
+  measure before replacing — applies to its own architecture exactly as
+  much as it applies to a proposed code change.
 
 ### Stage 4 — Multi-organization engineering platform
 
@@ -356,6 +403,14 @@ more than one organization, rather than one JSON file per git checkout.
 - If this stage is ever reached, it deserves its own ADR at that time,
   written against the real requirements of whoever is running it — not
   spelled out speculatively here.
+- **Introduced:** a real deployment/access-control layer, designed then,
+  against real requirements.
+- **Stays unchanged:** the `Scorer` interface, the plugin contract, the
+  schema fields themselves — by design, so this stage is a new layer
+  around the existing data model, not a rewrite of it.
+- **Removed/deprecated:** unknown until this stage is real — stated here
+  as "unknown" deliberately, rather than guessed, matching this
+  project's own standing rule about not inventing claims.
 
 ---
 

@@ -347,7 +347,17 @@ question. Fixed with tokenized matching; the test is
 | **[RESEARCH.md](./RESEARCH.md)** | Sourcing for every claim, tagged `[evidence]` or `[inference]` |
 | **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ.md](./FAQ.md)** | Self-scoring rubric · common questions |
 | **[docs/adr/](./docs/adr/)** | 6 Architecture Decision Records for the biggest engineering calls (deterministic routing, constrained arbitration, Engineering Memory, negative controls, plugin architecture, and a comparative review against TencentDB Agent Memory) — each cross-referenced to the `orchestrate memory recall` entry with the actual measurement behind it |
-| **[ARCHITECTURE_EVOLUTION.md](./ARCHITECTURE_EVOLUTION.md)** | How the memory system's architecture should change across 4 growth stages (solo → small OSS → large community → multi-org) — every "not needed" from the ADRs above reopened with a measured trigger, not left as a flat no |
+| **[ARCHITECTURE_EVOLUTION.md](./ARCHITECTURE_EVOLUTION.md)** | How the memory system's architecture should change across 4 growth stages (solo → small OSS → large community → multi-org), with numeric triggers (entry count, maintainer count, plugin count) for each transition |
+
+### Governance — how decisions get made, once "the maintainer decides" stops scaling
+
+| Document | What it is |
+|---|---|
+| **[DESIGN_INVARIANTS.md](./DESIGN_INVARIANTS.md)** | What must never change, what's part of the public contract, which tradeoffs are intentional — with an enforcement map showing which test or CI check backs each one |
+| **[STABILITY.md](./STABILITY.md)** | Stable vs. experimental vs. internal APIs, versioning, deprecation, and migration policy |
+| **[PLUGIN_GOVERNANCE.md](./PLUGIN_GOVERNANCE.md)** | The lifecycle a plugin moves through (Experimental → Community → Maintained → Core), promotion and removal criteria |
+| **[MEMORY_GOVERNANCE.md](./MEMORY_GOVERNANCE.md)** | Engineering Memory treated like a production database — schema versioning, validation, retention, quality gates, provenance policy |
+| **[docs/rfc/](./docs/rfc/)** | The process for proposing an architectural change — required for anything touching the guarantees above, deliberately thin below the scale where a heavier process would be justified |
 
 The `orchestrate_kit` corpus is the same knowledge in executable form. Where
 `TIMELINE.md` tells you dense embeddings lost, `orchestrate memory why-not
