@@ -7,7 +7,7 @@ composing for) already measured and rejected.
 
 Why not generate the prompt text with an LLM? Two reasons, both already
 load-bearing elsewhere in this codebase: it would break the
-zero-runtime-dependency core (DESIGN_INVARIANTS.md), and an LLM-authored
+zero-runtime-dependency core (CONTRIBUTING.md), and an LLM-authored
 prompt-about-prompting would be exactly the kind of unverifiable claim
 this project refuses to ship as if it were measured. A template with your
 real inputs filled in is honest about being a template.

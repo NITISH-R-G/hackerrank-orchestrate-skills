@@ -703,7 +703,7 @@ def test_cli_memory_list_shows_centrality(memory, capsys):
 # ===================================================== version consistency
 def test_versions_match():
     """pyproject.toml and __init__.py declared the same version by
-    discipline, not by a check -- DESIGN_INVARIANTS.md's enforcement map
+    discipline, not by a check
     claims this is checked, so it needs to actually be checked."""
     import re
 

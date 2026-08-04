@@ -294,7 +294,7 @@ document's other governance files.
 
 | Metric | Threshold | What activates | Justified in |
 |---|---:|---|---|
-| Memory entries | **100** | `files=`/`commit=` provenance stops being exceptional; `orchestrate memory verify` graduates from a CI check on 5 entries to a check that matters | `MEMORY_GOVERNANCE.md` |
+| Memory entries | **100** | `files=`/`commit=` provenance stops being exceptional; `orchestrate memory verify` graduates from a CI check on 5 entries to a check that matters |
 | Memory entries | **150** | Quality gate extends to every entry, not just rejections; duplicate-warning on `memory add` | §3, §4 |
 | Memory entries | **300** | Contradiction/conflict detection | §6 |
 | Memory entries | **500** | Digest/summary layer becomes worth building; retrieval re-measurement (lexical vs. dense/hybrid) on the *actual* corpus | §1 trigger B, §7 |
@@ -303,9 +303,9 @@ document's other governance files.
 | Maintainers | **3+** | Contradiction detection (alt. trigger) | §6 |
 | Maintainers | **5** | Formal governance (a real `GOVERNANCE.md`, not the "explicitly not planned" placeholder) becomes justified — see Stage 3 below |
 | Contributors (not necessarily maintainers) | **20** | RFC process gets its first real test as an actual coordination mechanism rather than a single-author formality | Stage 3 |
-| Plugins | **~10–20** | `PLUGIN_GOVERNANCE.md`'s Community tier gets its first real occupants | Stage 2/3 |
+| Plugins | **~10–20** | a plugin index becomes worth building | Stage 2/3 |
 | Plugins | **100** | A plugin *index* (searchable, not just linked from README) becomes worth building — the same "documentation gravity" problem `README.md`'s doc-map addresses for markdown files, recurring for plugins | Stage 3 |
-| Plugins | **500** | Plugin governance itself needs revisiting — at that volume, manual promotion review (`PLUGIN_GOVERNANCE.md`'s current process) stops scaling and needs its own tooling, ideally dogfooding `orchestrate_kit`'s own evaluator against plugin repositories | Stage 4 |
+| Plugins | **500** | Plugin governance itself needs revisiting — at that volume, manual promotion review stops scaling and needs its own tooling, ideally dogfooding `orchestrate_kit`'s own evaluator against plugin repositories | Stage 4 |
 | Review time for a new contributor's first full memory read-through | **~30 min** | Same digest-layer trigger as the 500-entry line — whichever fires first | §1, §8 |
 
 ### Stage 1 — Solo developer *(current)*
@@ -372,12 +372,12 @@ OR dozens of plugins/hundreds of ADRs exist.
   the re-measurement favors it — not assumed), digest layer (conditional
   on the automation precondition), plugin index, formal governance.
 - **Stays unchanged:** the `MemoryEntry` schema itself, the plugin
-  contract, the CLI's Stable-tier surface — `STABILITY.md`'s guarantees
-  are exactly what should NOT need to change for a project to absorb 10x
+  contract, the CLI's documented command surface — these are exactly what
+  should NOT need to change for a project to absorb 10x
   growth, if the Stage 1/2 foundations were built correctly.
 - **Deprecated, conditionally:** term-overlap-only search, if and only if
   the Stage 3 re-measurement genuinely shows a better alternative on the
-  real corpus — deprecated, not removed outright, per `STABILITY.md`'s
+  real corpus — deprecated, not removed outright, per SemVer's usual
   deprecation policy (one minor-version cycle of continued function before
   removal).
 - **Removed:** nothing unconditionally. This project's own standard —

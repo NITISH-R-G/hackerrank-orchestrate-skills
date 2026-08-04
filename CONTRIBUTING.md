@@ -1,7 +1,24 @@
 # Contributing
 
-This repository has two very different kinds of content, and the bar is
-different for each.
+This repository has one mission — the highest-quality toolkit for
+HackerRank Orchestrate — and two very different kinds of content serving
+it, with a different bar for each.
+
+## What must never change
+
+Short list, not a separate document — a permanent process document for a
+single-maintainer project with no external contributors yet would be
+process built ahead of the team that needs it. Folded here instead:
+
+- **Nothing states a number it did not measure.** A `Finding` without
+  evidence is reported as an opinion, never fact.
+- **A rejection without `reconsider_if` is refused**, not discouraged —
+  enforced in `cli.py::cmd_memory`.
+- **An audit is untrusted without a negative control** — see below.
+- **The core package has zero runtime dependencies.** It runs on a plane
+  with no key. Checked by CI installing no extras.
+- **`pyproject.toml` and `orchestrate_kit/__init__.py` versions must
+  match** — enforced by `test_versions_match`, not left to discipline.
 
 ## Contributing to `orchestrate_kit` (the software)
 

@@ -5,12 +5,24 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](./pyproject.toml)
 [![Zero runtime deps](https://img.shields.io/badge/dependencies-0-brightgreen)](./pyproject.toml)
 
-**Software for building AI systems you can defend.** An evaluator, an
-institutional memory that remembers what you already measured and rejected, a
-mentor that costs a change before you write it, and an interview simulator that
-cross-examines you.
+**The definitive toolkit for HackerRank Orchestrate.** HackerRank grades
+every submission on four independent signals — Code ZIP, Output CSV, AI
+Chat Transcript, AI Judge Interview — and their own published analysis
+found no single one predicts the leaderboard: the top submissions were
+balanced across all four, not excellent at one. Every tool here targets
+one or more of those four signals directly, not generic "AI engineering
+best practice."
 
-Plus 34 [Agent Skills](https://agentskills.io) and the full written methodology.
+| This repo gives you | Targets |
+|---|---|
+| `orchestrate transcript` — a rubric-verified linter for your chat transcript, not a prompt library | AI Chat Transcript |
+| `orchestrate interview` — an adaptive judge simulator with cross-examination and contradiction-catching session memory | AI Judge Interview |
+| `orchestrate evaluate` — black-box repo auditor: spec conformance, evidence quality, dataset-coupling, determinism | Code ZIP + Output CSV |
+| `orchestrate memory` — every measured rejection from a real, completed submission, queryable so you don't re-build what already lost | All four — it's the corpus behind the other three |
+| 34 [Agent Skills](https://agentskills.io) | Auto-triggering guidance across the whole build, sourced from HackerRank's own published material |
+
+Nothing here claims to be general AI-engineering infrastructure. It
+targets one leaderboard.
 
 ```bash
 git clone https://github.com/NITISH-R-G/hackerrank-orchestrate-skills.git
@@ -349,15 +361,13 @@ question. Fixed with tokenized matching; the test is
 | **[docs/adr/](./docs/adr/)** | 6 Architecture Decision Records for the biggest engineering calls (deterministic routing, constrained arbitration, Engineering Memory, negative controls, plugin architecture, and a comparative review against TencentDB Agent Memory) — each cross-referenced to the `orchestrate memory recall` entry with the actual measurement behind it |
 | **[ARCHITECTURE_EVOLUTION.md](./ARCHITECTURE_EVOLUTION.md)** | How the memory system's architecture should change across 4 growth stages (solo → small OSS → large community → multi-org), with numeric triggers (entry count, maintainer count, plugin count) for each transition |
 
-### Governance — how decisions get made, once "the maintainer decides" stops scaling
-
-| Document | What it is |
-|---|---|
-| **[DESIGN_INVARIANTS.md](./DESIGN_INVARIANTS.md)** | What must never change, what's part of the public contract, which tradeoffs are intentional — with an enforcement map showing which test or CI check backs each one |
-| **[STABILITY.md](./STABILITY.md)** | Stable vs. experimental vs. internal APIs, versioning, deprecation, and migration policy |
-| **[PLUGIN_GOVERNANCE.md](./PLUGIN_GOVERNANCE.md)** | The lifecycle a plugin moves through (Experimental → Community → Maintained → Core), promotion and removal criteria |
-| **[MEMORY_GOVERNANCE.md](./MEMORY_GOVERNANCE.md)** | Engineering Memory treated like a production database — schema versioning, validation, retention, quality gates, provenance policy |
-| **[docs/rfc/](./docs/rfc/)** | The process for proposing an architectural change — required for anything touching the guarantees above, deliberately thin below the scale where a heavier process would be justified |
+Governance for a single-maintainer project with no external contributors
+yet is folded into [CONTRIBUTING.md](./CONTRIBUTING.md#what-must-never-change)
+rather than five separate documents — process built ahead of the team that
+needs it is exactly the kind of generalization this project stays away
+from. This repo has one mission: the highest-quality toolkit for
+HackerRank Orchestrate. Everything here optimizes for that, not for
+looking like infrastructure for a scale that doesn't exist yet.
 
 The `orchestrate_kit` corpus is the same knowledge in executable form. Where
 `TIMELINE.md` tells you dense embeddings lost, `orchestrate memory why-not
