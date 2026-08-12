@@ -319,6 +319,171 @@ def cmd_score(args) -> int:
     return 0
 
 
+def cmd_experiment(args) -> int:
+    from .experiment.store import ExperimentStore
+
+    if getattr(args, "audit", False):
+        from .experiment.health import render_health_report
+        print(render_health_report())
+        return 0
+
+    repo_root = Path(args.repo)
+    store = ExperimentStore(repo_root)
+
+    if args.esub == "start":
+        from .experiment import git_util
+        from .experiment.runner import start_experiment
+
+        exp = start_experiment(
+            repo_root, args.title, args.hypothesis or "", args.target,
+            target_dimension=args.dimension or "", python=args.python,
+            transcript_path=Path(args.transcript) if args.transcript else None,
+            interview_result_path=Path(args.interview_result)
+                                  if args.interview_result else None,
+            store=store)
+        print(f"EXPERIMENT {exp.id}")
+        print()
+        print("BASELINE")
+        for k, v in exp.baseline_score.items():
+            print(f"  {k:<12} {'UNKNOWN' if v is None else f'{v:.1f}'}")
+        print()
+        print(f"Target: {exp.target_signal}")
+        print(f"Hypothesis: {exp.hypothesis}")
+        print(f"Baseline commit: {exp.baseline_commit or 'UNKNOWN (not a git repo)'}")
+        for n in exp.notes:
+            print(f"  note: {n}")
+        print()
+        print(f"Now make ONE isolated change, then run:")
+        print(f"  orchestrate experiment finish {exp.id} --repo {args.repo}")
+        return 0
+
+    if args.esub == "finish":
+        from .experiment.runner import finish_experiment
+        mem = None
+        if not getattr(args, "no_memory", False):
+            mem = _memory(args)
+        try:
+            exp = finish_experiment(
+                repo_root, args.id, python=args.python,
+                transcript_path=Path(args.transcript) if args.transcript else None,
+                interview_result_path=Path(args.interview_result)
+                                      if args.interview_result else None,
+                store=store, memory=mem)
+        except (KeyError, ValueError) as e:
+            print(f"error: {e}")
+            return 1
+        print(f"EXPERIMENT {exp.id}")
+        print()
+        print(f"{'':<14}{'BASELINE':>10}{'AFTER':>10}{'DELTA':>10}")
+        for k in ("code", "output", "transcript", "interview", "weighted"):
+            b = exp.baseline_score.get(k)
+            a = exp.experiment_score.get(k)
+            d = exp.delta.get(k)
+            bs = "UNKNOWN" if b is None else f"{b:.1f}"
+            as_ = "UNKNOWN" if a is None else f"{a:.1f}"
+            ds = "UNKNOWN" if d is None else f"{d:+.2f}"
+            print(f"{k:<14}{bs:>10}{as_:>10}{ds:>10}")
+        print()
+        print(f"Target signal: {exp.target_signal}")
+        print(f"Target delta: "
+             f"{'UNKNOWN' if exp.actual_gain is None else f'{exp.actual_gain:+.2f}'}")
+        if exp.regressions:
+            print(f"Regressions: {'; '.join(exp.regressions)}")
+        print()
+        print(f"Verdict: {exp.decision}")
+        return 0
+
+    if args.esub == "list":
+        exps = store.all()
+        if not exps:
+            print("no experiments recorded")
+            return 0
+        print(f"{'ID':<10}{'TARGET':<14}{'DELTA':>10}  STATUS")
+        for e in exps:
+            d = e.actual_gain
+            ds = "UNKNOWN" if d is None else f"{d:+.2f}"
+            print(f"{e.id:<10}{e.target_signal:<14}{ds:>10}  {e.status}")
+        return 0
+
+    if args.esub == "show":
+        exp = store.get(args.id)
+        if exp is None:
+            print(f"no experiment {args.id}")
+            return 1
+        import json
+        print(json.dumps(exp.to_dict(), indent=2))
+        return 0
+
+    if args.esub == "compare":
+        exps = [store.get(i) for i in args.ids]
+        if any(e is None for e in exps):
+            missing = [i for i, e in zip(args.ids, exps) if e is None]
+            print(f"unknown experiment id(s): {missing}")
+            return 1
+        header = "".join(f"{e.id:>16}" for e in exps)
+        print(f"{'':<14}{header}")
+        for k in ("code", "output", "transcript", "interview"):
+            row = "".join(
+                f"{('UNKNOWN' if e.delta.get(k) is None else f'{e.delta.get(k):+.2f}'):>16}"
+                for e in exps)
+            print(f"{k:<14}{row}")
+        tests_row = "".join(f"{e.tests_run or '?':>16}" for e in exps)
+        print(f"{'Tests':<14}{tests_row}")
+        files_row = "".join(f"{len(e.files_changed):>16}" for e in exps)
+        print(f"{'Files changed':<14}{files_row}")
+        print()
+        best = max(exps, key=lambda e: (e.actual_gain if e.actual_gain is not None else -1e9))
+        print(f"Decision: {best.id} preferred")
+        print(f"Reason: highest measured target-signal delta among the compared "
+             f"experiments ({best.actual_gain:+.2f})" if best.actual_gain is not None
+             else "Reason: no experiment here has a measured target delta")
+        return 0
+
+    if args.esub == "frontier":
+        from .experiment.pareto import frontier
+        f = frontier(store.all())
+        if not f:
+            print("no experiments with comparable measured deltas yet")
+            return 0
+        print("PARETO FRONTIER")
+        print()
+        for e in f:
+            print(e.id)
+            for k, v in e.delta.items():
+                if k in ("code", "output", "transcript", "interview"):
+                    print(f"  {k} {v:+.2f}")
+            print()
+        return 0
+
+    if args.esub == "next":
+        from .experiment.next import recommend_next, render_recommendation
+        from .score.scoreboard import build_scorecard
+        card = build_scorecard(repo_root, python=args.python)
+        print(render_recommendation(recommend_next(card, store)))
+        return 0
+
+    if args.esub == "plan":
+        from .experiment.next import recommend_next, render_recommendation
+        from .score.scoreboard import build_scorecard, counterfactual
+        card = build_scorecard(repo_root, python=args.python)
+        rec = recommend_next(card, store)
+        print(f"GOAL: {' '.join(args.goal)}")
+        print()
+        print(render_recommendation(rec))
+        if rec.target_signal in {s.name for s in card.signals}:
+            cf = counterfactual(card, rec.target_signal, 5.0)
+            if "weighted_impact" in cf:
+                print()
+                print(f"CURRENT: {cf['label']} = {cf['current_score']:.1f}")
+                print(f"WHAT-IF: +5 {cf['label']} -> "
+                     f"{cf['weighted_impact']:+.2f} overall weighted contribution")
+                print("(this is a ceiling IF achieved, not a prediction the "
+                     "proposed change reaches it)")
+        return 0
+
+    return 1
+
+
 def cmd_memory(args) -> int:
     mem = _memory(args)
 
@@ -572,6 +737,50 @@ def build_parser() -> argparse.ArgumentParser:
                     help="run the score engine's own health check "
                          "(adversarial self-test) instead of scoring a repo")
     sc.set_defaults(fn=cmd_score)
+
+    ex = sub.add_parser("experiment",
+                        help="baseline -> change -> measure -> accept/reject "
+                             "loop, built on `orchestrate score`")
+    ex.add_argument("--repo", default=".")
+    ex.add_argument("--python", default="python")
+    ex.add_argument("--memory", default=None)
+    ex.add_argument("--audit", action="store_true",
+                    help="run the experiment engine's own health check "
+                         "instead of running an experiment")
+    exs = ex.add_subparsers(dest="esub")
+
+    exst = exs.add_parser("start", help="capture a baseline and open an experiment")
+    exst.add_argument("title")
+    exst.add_argument("--hypothesis", default="")
+    exst.add_argument("--target", required=True,
+                      choices=["code", "output", "transcript", "interview"])
+    exst.add_argument("--dimension", default="")
+    exst.add_argument("--transcript", default=None)
+    exst.add_argument("--interview-result", default=None)
+
+    exfi = exs.add_parser("finish", help="measure the current state against the baseline")
+    exfi.add_argument("id")
+    exfi.add_argument("--transcript", default=None)
+    exfi.add_argument("--interview-result", default=None)
+    exfi.add_argument("--no-memory", action="store_true",
+                      help="do not write accepted/rejected results to "
+                           "Engineering Memory")
+
+    exs.add_parser("list", help="all recorded experiments")
+
+    exsh = exs.add_parser("show", help="full evidence record for one experiment")
+    exsh.add_argument("id")
+
+    exco = exs.add_parser("compare", help="compare two or more experiments")
+    exco.add_argument("ids", nargs="+")
+
+    exs.add_parser("frontier", help="Pareto-non-dominated experiments")
+    exs.add_parser("next", help="recommend the next experiment (ladder-ordered)")
+
+    expl = exs.add_parser("plan", help="counterfactual-backed plan for a stated goal")
+    expl.add_argument("goal", nargs="+")
+
+    ex.set_defaults(fn=cmd_experiment)
 
     t = sub.add_parser("transcript",
                        help="chat-transcript scoring, prompt blueprints, composer")
