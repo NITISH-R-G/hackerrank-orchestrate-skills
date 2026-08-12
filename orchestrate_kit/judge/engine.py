@@ -27,6 +27,7 @@ from __future__ import annotations
 import random
 import re
 import textwrap
+from pathlib import Path
 from dataclasses import dataclass, field
 
 from . import bank
@@ -390,7 +391,7 @@ def _wrap(w, text: str, prefix: str = "  ") -> None:
 def run_terminal(persona_key: str = "skeptic", difficulty_key: str = "standard",
                  topics: list[str] | None = None, n: int = 8,
                  learn: bool = False, panel: bool = False,
-                 seed: int | None = None) -> int:
+                 seed: int | None = None, save_path: str | None = None) -> int:
     persona = BY_KEY.get(persona_key, BY_KEY["skeptic"])
     diff = LEVELS.get(difficulty_key, LEVELS["standard"])
     iv = Interview(persona, diff, topics, n, learn, panel, seed)
@@ -448,4 +449,21 @@ def run_terminal(persona_key: str = "skeptic", difficulty_key: str = "standard",
 
     print()
     print(iv.report())
+
+    if save_path and iv.turns:
+        import json
+        from datetime import datetime, timezone
+
+        total = int(round(sum(t.score for t in iv.turns) / len(iv.turns)))
+        record = {
+            "score": total,
+            "persona": "panel" if panel else persona.key,
+            "difficulty": diff.key,
+            "questions_answered": len(iv.turns),
+            "questions_requested": n,
+            "saved_at": datetime.now(timezone.utc).isoformat(),
+        }
+        Path(save_path).write_text(json.dumps(record, indent=2), encoding="utf-8")
+        print(f"\nsaved interview result -> {save_path}")
+
     return 0

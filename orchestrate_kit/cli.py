@@ -261,7 +261,25 @@ def cmd_interview(args) -> int:
     return run_terminal(
         persona_key=args.persona, difficulty_key=args.difficulty,
         topics=args.topics or None, n=args.questions,
-        learn=args.learn, panel=args.panel, seed=args.seed)
+        learn=args.learn, panel=args.panel, seed=args.seed,
+        save_path=args.save)
+
+
+def cmd_score(args) -> int:
+    from .score.scoreboard import build_scorecard, render_scoreboard
+
+    repo_root = Path(args.repo)
+    transcript_path = Path(args.transcript) if args.transcript else None
+    interview_path = Path(args.interview_result) if args.interview_result else None
+
+    card = build_scorecard(repo_root, python=args.python,
+                           transcript_path=transcript_path,
+                           interview_result_path=interview_path)
+    if args.official_score is not None:
+        card.official_score = args.official_score
+
+    print(render_scoreboard(card, repo_root, save_history=not args.no_history))
+    return 0
 
 
 def cmd_memory(args) -> int:
@@ -490,7 +508,26 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--panel", action="store_true",
                    help="rotate all four judges")
     i.add_argument("--seed", type=int, default=None)
+    i.add_argument("--save", default=None,
+                   help="write the final score to this JSON path, so "
+                        "`orchestrate score --interview-result <path>` "
+                        "can report it instead of UNKNOWN")
     i.set_defaults(fn=cmd_interview)
+
+    sc = sub.add_parser("score",
+                        help="estimated Orchestrate scoreboard (4 published signals)")
+    sc.add_argument("--repo", default=".")
+    sc.add_argument("--python", default="python")
+    sc.add_argument("--transcript", default=None,
+                    help="chat transcript file for the Chat Transcript signal")
+    sc.add_argument("--interview-result", default=None,
+                    help="JSON saved by `orchestrate interview --save <path>`")
+    sc.add_argument("--official-score", type=float, default=None,
+                    help="your real HackerRank score, if you have one, for "
+                         "calibration comparison only")
+    sc.add_argument("--no-history", action="store_true",
+                    help="do not record this run in the local score history")
+    sc.set_defaults(fn=cmd_score)
 
     t = sub.add_parser("transcript",
                        help="chat-transcript scoring, prompt blueprints, composer")
