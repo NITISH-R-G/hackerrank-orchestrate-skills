@@ -89,11 +89,64 @@ def call():
 '''
 
 
+_KEYWORD_STUFF_SRC = '''
+# agent agent agent multi-agent tool tool loop guardrail RAG structured output
+class AgentRolePersonaHandler:
+    """agent role persona tool dispatch route handler multi-agent RAG guardrail"""
+    pass
+
+SYSTEM_PROMPT = """
+agent tool loop guardrail multi-agent RAG structured output retry
+max_retries tenacity max_iterations MAX_TURNS validate schema.validate
+refuse reject cannot BaseModel response_format json_schema pydantic
+"""
+
+def tool_dispatch_route_handler():
+    pass
+
+def agent_role_persona():
+    pass
+'''
+
+_LEGIT_DETERMINISTIC_SRC = '''
+def classify(ticket: dict) -> dict:
+    if ticket["amount"] > 10000:
+        action = "notify"
+    elif ticket["type"] == "spam":
+        action = "mute"
+    else:
+        action = "digest"
+    return {"action": action}
+'''
+
+
 def test_code_zip_scores_a_recognizable_agent_pattern_reasonably_high(tmp_path):
     (tmp_path / "agent.py").write_text(_AGENT_SRC, encoding="utf-8")
     score = score_code(tmp_path)
     assert score.estimated_score is not None
-    assert score.estimated_score > 20
+    assert score.estimated_score > 15
+
+
+def test_code_zip_negative_control_keyword_stuffing_scores_below_legit_code(tmp_path):
+    """Regression test for a confirmed defect: a file with zero real agent
+    behavior but every rubric keyword crammed into a docstring/string
+    literal used to outscore a small, legitimate, keyword-free
+    deterministic workflow (24.1 vs 12.3). Comments, docstrings, and
+    unrelated string contents must never count as evidence -- only actual
+    code (AST-verified assignments, real call sites, non-trivial bodies)."""
+    stuffed = tmp_path / "stuffed"
+    stuffed.mkdir()
+    (stuffed / "agent.py").write_text(_KEYWORD_STUFF_SRC, encoding="utf-8")
+    stuffed_score = score_code(stuffed)
+
+    legit = tmp_path / "legit"
+    legit.mkdir()
+    (legit / "rules.py").write_text(_LEGIT_DETERMINISTIC_SRC, encoding="utf-8")
+    legit_score = score_code(legit)
+
+    assert stuffed_score.estimated_score < legit_score.estimated_score
+    # and in absolute terms: keyword soup with no behavior should score low
+    assert stuffed_score.estimated_score < 15
 
 
 def test_code_zip_negative_control_hardcoded_secret_tanks_rigor(tmp_path):
@@ -135,6 +188,45 @@ def test_output_csv_unknown_when_no_output_file(tmp_path):
     score = score_output(tmp_path)
     assert score.is_unknown
     assert score.confidence == Confidence.UNKNOWN
+
+
+def _write_multirow_submission(root: Path, reasons: list[str]) -> None:
+    """A confirmed gap in the shared evaluator: audit_output_sanity only
+    flags reasons that are IDENTICAL across every row, so a single-row (or
+    all-blank) fixture doesn't exercise per-row justification quality at
+    all. Needs >1 distinct row to isolate the blank-justification check."""
+    (root / "dataset").mkdir(parents=True, exist_ok=True)
+    out_lines = ["message_id,action,message_type,reason,confidence,evidence_message_ids"]
+    hist_lines = ["message_id,message"]
+    for i, r in enumerate(reasons):
+        out_lines.append(f'M{i},notify,personal,"{r}",0.9,none')
+        hist_lines.append(f"M{i},hey are you free this weekend? {i}")
+    (root / "dataset" / "output.csv").write_text(
+        "\n".join(out_lines) + "\n", encoding="utf-8")
+    (root / "dataset" / "message_history.csv").write_text(
+        "\n".join(hist_lines) + "\n", encoding="utf-8")
+    (root / "problem_statement.md").write_text("# Problem\n", encoding="utf-8")
+
+
+def test_output_csv_negative_control_blank_justification_drops_score(tmp_path):
+    """Regression test for a confirmed defect: a correct action with a
+    blank justification used to score identically to one with a grounded
+    justification, because the only reason-quality check in the shared
+    evaluator looks for reasons that are all IDENTICAL, not individually
+    blank. HackerRank's own rubric explicitly distinguishes these."""
+    grounded = tmp_path / "grounded"
+    grounded.mkdir()
+    _write_multirow_submission(grounded, [
+        f"a friend asked a direct question, message {i}" for i in range(10)])
+    grounded_score = score_output(grounded)
+
+    blank = tmp_path / "blank"
+    blank.mkdir()
+    _write_multirow_submission(blank, [""] * 10)
+    blank_score = score_output(blank)
+
+    assert blank_score.estimated_score < grounded_score.estimated_score
+    assert any("justification" in f.label for f in blank_score.findings)
 
 
 def test_output_csv_negative_control_illegal_status_drops_score(tmp_path):
@@ -221,8 +313,29 @@ def test_scoreboard_combines_all_four_signals(tmp_path):
     assert len(card.signals) == 4
     assert card.weighted_estimate is not None
     text = render_scoreboard(card, tmp_path, save_history=False)
-    assert "ESTIMATED ORCHESTRATE SCORE" in text
+    # only code + output are supplied here -- interview/transcript stay
+    # UNKNOWN, so this must land on the explicit partial-data branch, not
+    # silently render a full "X / 100" score.
+    assert "ESTIMATED SCORE: UNKNOWN (partial data only)" in text
     assert "not official" in text.lower()
+
+
+def test_scoreboard_full_confidence_when_all_four_signals_known(tmp_path):
+    _write_clean_submission(tmp_path)
+    (tmp_path / "agent.py").write_text(_AGENT_SRC, encoding="utf-8")
+    transcript = tmp_path / "transcript.txt"
+    transcript.write_text("We chose X over Y because Z; measured 90%.",
+                          encoding="utf-8")
+    interview = tmp_path / "interview.json"
+    interview.write_text(json.dumps({"score": 70, "questions_answered": 5,
+                                     "questions_requested": 5}),
+                         encoding="utf-8")
+    card = build_scorecard(tmp_path, transcript_path=transcript,
+                           interview_result_path=interview)
+    assert all(not s.is_unknown for s in card.signals)
+    text = render_scoreboard(card, tmp_path, save_history=False)
+    assert f"ESTIMATED ORCHESTRATE SCORE: {card.weighted_estimate:.2f} / 100" in text
+    assert "UNKNOWN" not in text.split("ESTIMATED ORCHESTRATE SCORE")[1].split("\n")[0]
 
 
 def test_scoreboard_history_records_delta_across_runs(tmp_path):

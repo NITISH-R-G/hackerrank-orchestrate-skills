@@ -23,7 +23,9 @@ states explicitly.
 from __future__ import annotations
 
 import ast
+import io
 import re
+import tokenize
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,6 +56,40 @@ def _parse(path: Path) -> ast.Module | None:
         return None
 
 
+def _code_only(source: str) -> str:
+    """Source with every STRING and COMMENT token blanked out.
+
+    Behavioral-evidence checks (retry, validation, refusal, structured
+    output, iteration caps) must never fire on keyword soup stuffed into a
+    docstring, a comment, or an unrelated string literal -- only on
+    identifiers/calls that actually appear in executable code. Fails
+    closed: if the file can't be tokenized, behavioral checks see nothing
+    rather than falling back to the unsafe raw-text scan.
+    """
+    out: list[str] = []
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(source).readline):
+            if tok.type in (tokenize.STRING, tokenize.COMMENT):
+                out.append(" ")
+            elif tok.type in (tokenize.NEWLINE, tokenize.NL):
+                out.append("\n")
+            else:
+                out.append(tok.string)
+    except (tokenize.TokenError, IndentationError, SyntaxError, ValueError):
+        return ""
+    return " ".join(out)
+
+
+def _trivial_body(body: list[ast.stmt]) -> bool:
+    """True if a class/function body is just `pass` and/or a docstring --
+    i.e. a stub that exists only to make a name match a keyword regex."""
+    real = [n for n in body if not (isinstance(n, ast.Pass) or
+                                    (isinstance(n, ast.Expr) and
+                                     isinstance(n.value, ast.Constant) and
+                                     isinstance(n.value.value, str)))]
+    return len(real) == 0
+
+
 @dataclass
 class _Signals:
     files: int = 0
@@ -78,8 +114,6 @@ _CALL_NAMES_LLM = re.compile(
     r"\b(chat|completions?|generate|invoke|complete|messages)\b", re.I)
 _TOOL_LIKE = re.compile(r"\b(tool|function|dispatch|route|handler)\b", re.I)
 _ROLE_LIKE = re.compile(r"\b(agent|role|persona)\b", re.I)
-_SYSTEM_PROMPT = re.compile(
-    r"""['"]system['"]\s*:|SYSTEM_PROMPT|system_prompt""", re.I)
 _STRUCTURED_OUTPUT = re.compile(
     r"\bBaseModel\b|response_format|json\.loads|json_schema|pydantic", re.I)
 _REFUSAL = re.compile(
@@ -93,28 +127,48 @@ _VALIDATION = re.compile(
     re.I)
 
 
+def _has_system_prompt(tree: ast.Module) -> bool:
+    """AST-based, not a substring search: a real assignment whose target
+    name says 'system prompt', or a chat-message-shaped dict literal with
+    a 'system' key -- never a comment or unrelated string mentioning the
+    word."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for t in node.targets:
+                if isinstance(t, ast.Name) and "system_prompt" in t.id.lower():
+                    return True
+        if isinstance(node, ast.Dict):
+            for k in node.keys:
+                if (isinstance(k, ast.Constant) and isinstance(k.value, str)
+                        and k.value.lower() == "system"):
+                    return True
+    return False
+
+
 def _collect(tree: ast.Module, source: str, sig: _Signals) -> None:
     sig.files += 1
-    if _SYSTEM_PROMPT.search(source):
+    code = _code_only(source)
+
+    if _has_system_prompt(tree):
         sig.system_prompt_strings += 1
-    if _STRUCTURED_OUTPUT.search(source):
+    if _STRUCTURED_OUTPUT.search(code):
         sig.structured_output += 1
-    if _REFUSAL.search(source):
+    if _REFUSAL.search(code):
         sig.refusal_conditions += 1
-    if _RETRY.search(source):
+    if _RETRY.search(code):
         sig.retry_patterns += 1
-    if _MAX_ITER.search(source):
+    if _MAX_ITER.search(code):
         sig.bounded_iteration_caps += 1
-    if _VALIDATION.search(source):
+    if _VALIDATION.search(code):
         sig.output_validation += 1
     if _HARDCODED_SECRET.search(source):
         sig.hardcoded_secrets += 1
-    if _ENV_SECRET.search(source):
+    if _ENV_SECRET.search(code):
         sig.env_secret_usage += 1
 
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
-            if _ROLE_LIKE.search(node.name):
+            if _ROLE_LIKE.search(node.name) and not _trivial_body(node.body):
                 sig.role_classes += 1
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             sig.functions += 1
@@ -125,7 +179,7 @@ def _collect(tree: ast.Module, source: str, sig: _Signals) -> None:
             body_len = (node.body[-1].end_lineno or node.lineno) - node.lineno
             if body_len > 80:
                 sig.long_functions += 1
-            if _TOOL_LIKE.search(node.name):
+            if _TOOL_LIKE.search(node.name) and not _trivial_body(node.body):
                 sig.tool_schema_dicts += 1
         elif isinstance(node, (ast.For, ast.While)):
             calls_inside = [n for n in ast.walk(node) if isinstance(n, ast.Call)]

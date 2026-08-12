@@ -79,15 +79,31 @@ def render_scoreboard(card: ScoreCard, repo_root: Path,
 
     lines.append("-" * 34)
     weighted = card.weighted_estimate
+    missing = [s.label for s in card.signals if s.is_unknown]
+
     if weighted is None:
         lines.append("ESTIMATED ORCHESTRATE SCORE: UNKNOWN")
-        lines.append("  (no signals were measurable)")
+        lines.append("  Reason: no signal is measurable locally "
+                     f"({', '.join(missing)} all unavailable).")
+    elif missing:
+        # Deliberately NOT rendered as "X / 100" -- that would visually
+        # equate a 90%-known partial estimate with a full-confidence one.
+        # The published scale tops out at 100; showing a smaller-looking
+        # fraction of KNOWN weight makes the gap impossible to mistake for
+        # a complete score.
+        lines.append("CURRENT ESTIMATED SCORE: UNKNOWN (partial data only)")
+        lines.append(f"  Measured contribution so far: {weighted:.2f} "
+                     f"points, from {card.known_weight_fraction * 100:.0f}% "
+                     "of the official weight")
+        lines.append(f"  Missing signal(s), NOT counted as zero: "
+                     f"{', '.join(missing)} "
+                     f"({(1 - card.known_weight_fraction) * 100:.0f}% of "
+                     "official weight unaccounted for)")
     else:
-        lines.append(f"ESTIMATED ORCHESTRATE SCORE (partial, "
-                     f"{card.known_weight_fraction * 100:.0f}% of official "
-                     f"weight known): {weighted:.2f} / "
-                     f"{card.known_weight_fraction * 100:.2f}")
+        lines.append(f"ESTIMATED ORCHESTRATE SCORE: {weighted:.2f} / 100")
+        lines.append("  All four official signals were measurable.")
 
+    if weighted is not None:
         prev = _load_previous(repo_root)
         if prev is not None:
             delta = weighted - prev
