@@ -6,9 +6,21 @@ from pathlib import Path
 import pytest
 
 from orchestrate_kit.score.code_zip import score_code
+from orchestrate_kit.score.consistency import (
+    check_code_vs_interview,
+    check_code_vs_output,
+    check_code_vs_transcript,
+    check_readme_vs_code,
+    check_transcript_vs_interview,
+)
 from orchestrate_kit.score.interview_signal import score_interview
 from orchestrate_kit.score.output_csv import score_output
-from orchestrate_kit.score.scoreboard import build_scorecard, render_scoreboard
+from orchestrate_kit.score.scoreboard import (
+    build_scorecard,
+    counterfactual,
+    next_best_experiment,
+    render_scoreboard,
+)
 from orchestrate_kit.score.signals import Confidence, ScoreCard, SignalScore
 from orchestrate_kit.score.transcript_signal import score_transcript
 
@@ -356,3 +368,208 @@ def test_scoreboard_reports_unknown_overall_when_nothing_is_measurable(tmp_path)
     # still degrade gracefully rather than crash.
     text = render_scoreboard(card, tmp_path, save_history=False)
     assert "UNKNOWN" in text
+
+
+# ------------------------------------------------------------ consistency.py
+
+def test_consistency_bm25_param_mismatch_is_a_fail(tmp_path):
+    (tmp_path / "search.py").write_text("BM25_K1 = 1.2\nBM25_B = 0.9\n",
+                                        encoding="utf-8")
+    check = check_code_vs_interview(
+        tmp_path, ["We use BM25 with k1=1.5, b=0.75 for retrieval scoring."])
+    assert check.verdict == "FAIL"
+    assert "k1=1.5" in check.detail and "k1=1.2" in check.detail
+
+
+def test_consistency_bm25_param_match_is_a_pass(tmp_path):
+    (tmp_path / "search.py").write_text("BM25_K1 = 1.2\nBM25_B = 0.9\n",
+                                        encoding="utf-8")
+    check = check_code_vs_interview(
+        tmp_path, ["We use BM25 with k1=1.2, b=0.9 for retrieval scoring."])
+    assert check.verdict == "PASS"
+
+
+def test_consistency_claimed_technique_absent_from_code_is_a_warning(tmp_path):
+    (tmp_path / "rules.py").write_text("def f(): return 1\n", encoding="utf-8")
+    transcript = tmp_path / "t.txt"
+    transcript.write_text("We implemented a cross-encoder reranker.",
+                          encoding="utf-8")
+    check = check_code_vs_transcript(tmp_path, transcript)
+    assert check.verdict == "WARNING"
+
+
+def test_consistency_readme_claims_unimplemented_feature_is_a_warning(tmp_path):
+    (tmp_path / "rules.py").write_text("def f(): return 1\n", encoding="utf-8")
+    (tmp_path / "README.md").write_text(
+        "We implement RAG and reranking for best-in-class retrieval.",
+        encoding="utf-8")
+    check = check_readme_vs_code(tmp_path)
+    assert check.verdict == "WARNING"
+
+
+def test_consistency_transcript_interview_reject_vs_ship_is_a_fail(tmp_path):
+    transcript = tmp_path / "t.txt"
+    transcript.write_text(
+        "We considered embeddings but rejected embeddings for cold-start "
+        "latency reasons.", encoding="utf-8")
+    check = check_transcript_vs_interview(
+        transcript, ["We use embeddings for retrieval, it works well."])
+    assert check.verdict == "FAIL"
+
+
+def test_consistency_code_output_fraud_escalation_violation_is_a_fail(tmp_path):
+    (tmp_path / "rules.py").write_text(
+        'def classify(t):\n    if "fraud" in t: return escalate(t)\n',
+        encoding="utf-8")
+    (tmp_path / "dataset").mkdir()
+    (tmp_path / "dataset" / "output.csv").write_text(
+        "message_id,action,message_type,reason,confidence,evidence_message_ids\n"
+        'M1,mute,scam,"low priority",0.9,none\n', encoding="utf-8")
+    (tmp_path / "dataset" / "message_history.csv").write_text(
+        "message_id,message\nM1,this looks like fraud on my account\n",
+        encoding="utf-8")
+    check = check_code_vs_output(tmp_path)
+    assert check.verdict == "FAIL"
+
+
+def test_consistency_unknown_when_artifacts_missing(tmp_path):
+    assert check_code_vs_transcript(tmp_path, None).verdict == "UNKNOWN"
+    assert check_transcript_vs_interview(None, None).verdict == "UNKNOWN"
+
+
+# ------------------------------------------- interview hallucination defense
+
+def test_interview_honest_uncertainty_beats_a_caught_factual_contradiction(tmp_path):
+    """The audit's single most important interview test: a polished,
+    fluent, maximally-specific hallucination about a checkable technical
+    claim (BM25 constants) must score BELOW an honest admission of
+    uncertainty once the claim is checked against the code -- confirmed
+    broken before this fix (66 vs 25, hallucination winning), fixed by
+    capping (not merely docking) a contradicted-claim score."""
+    (tmp_path / "search.py").write_text("BM25_K1 = 1.2\nBM25_B = 0.9\n",
+                                        encoding="utf-8")
+    hallucinated = tmp_path / "hallucinated.json"
+    hallucinated.write_text(json.dumps({
+        "score": 66, "questions_answered": 1, "questions_requested": 1,
+        "answers": [{"topic": "retrieval", "text":
+            "We implemented BM25 with k1=1.5, b=0.75, measured nDCG@10 at "
+            "0.89 after ablating the baseline, benchmarked against 500 "
+            "held-out queries."}]}), encoding="utf-8")
+    honest = tmp_path / "honest.json"
+    honest.write_text(json.dumps({
+        "score": 25, "questions_answered": 1, "questions_requested": 1,
+        "answers": [{"topic": "retrieval", "text":
+            "I do not have a strong retrieval component and I have not "
+            "measured its recall; that is unverified."}]}), encoding="utf-8")
+
+    h = score_interview(hallucinated, repo_root=tmp_path)
+    o = score_interview(honest, repo_root=tmp_path)
+    assert o.estimated_score > h.estimated_score
+    assert any("contradicts code" in f.label for f in h.findings)
+
+
+def test_interview_without_repo_root_still_works_unaffected(tmp_path):
+    """Backward compatibility: repo_root is optional. No code to check
+    against -> no consistency penalty, just the raw shape score."""
+    p = tmp_path / "r.json"
+    p.write_text(json.dumps({"score": 60, "questions_answered": 1,
+                             "questions_requested": 1}), encoding="utf-8")
+    s = score_interview(p)
+    assert s.estimated_score == 60.0
+
+
+# -------------------------------------------------------- counterfactual.py
+
+def test_counterfactual_impact_uses_published_weight(tmp_path):
+    _write_clean_submission(tmp_path)
+    card = build_scorecard(tmp_path)
+    result = counterfactual(card, "output", 5.0)
+    # output is at 100 already in the clean fixture -- clamped, so delta is 0
+    assert result["weight"] == pytest.approx(0.30)
+
+
+def test_counterfactual_unknown_signal_reports_no_baseline(tmp_path):
+    card = build_scorecard(tmp_path)  # empty repo -> output/interview/transcript UNKNOWN
+    result = counterfactual(card, "interview", 5.0)
+    assert result["impact"] is None
+
+
+def test_counterfactual_rejects_unknown_signal_name(tmp_path):
+    _write_clean_submission(tmp_path)
+    card = build_scorecard(tmp_path)
+    result = counterfactual(card, "not_a_real_signal", 5.0)
+    assert "error" in result
+
+
+# ------------------------------------------------------- next_best_experiment
+
+def test_next_best_experiment_does_not_just_pick_lowest_score(tmp_path):
+    """A MEASURED 40 with real headroom should be able to outrank a
+    HEURISTIC 20 once confidence-discounting is applied -- this is the
+    audit's explicit requirement that leverage != lowest score."""
+    a = SignalScore("output", "Output CSV", 40.0, 0.30, Confidence.MEASURED)
+    b = SignalScore("code", "Code ZIP", 20.0, 0.30, Confidence.HEURISTIC)
+    c = SignalScore("interview", "AI Judge Interview", None, 0.30, Confidence.UNKNOWN)
+    d = SignalScore("transcript", "AI Chat Transcript", None, 0.10, Confidence.UNKNOWN)
+    card = ScoreCard(signals=[a, b, c, d])
+    ranked = next_best_experiment(card)
+    known = [r for r in ranked if r["expected_impact"] is not None]
+    # both have identical weight and headroom; MEASURED confidence (1.0
+    # discount) must not score LOWER leverage than HEURISTIC (0.6 discount)
+    output_rank = next(r for r in known if r["signal"] == "output")
+    code_rank = next(r for r in known if r["signal"] == "code")
+    assert output_rank["expected_impact"] >= code_rank["expected_impact"]
+
+
+def test_next_best_experiment_unknown_signals_sort_last(tmp_path):
+    a = SignalScore("output", "Output CSV", 90.0, 0.30, Confidence.MEASURED)
+    b = SignalScore("interview", "AI Judge Interview", None, 0.30, Confidence.UNKNOWN)
+    card = ScoreCard(signals=[a, b])
+    ranked = next_best_experiment(card)
+    assert ranked[-1]["signal"] == "interview"
+
+
+# --------------------------------------------------------------- health.py
+
+def test_health_report_all_categories_pass_live(tmp_path):
+    from orchestrate_kit.score.health import run_health_checks
+    results = run_health_checks()
+    failed = [(name, detail) for name, ok, detail in results if not ok]
+    assert not failed, f"health categories failed: {failed}"
+    assert len(results) >= 8
+
+
+# --------------------------------------------- CLI end-to-end (real bug class)
+# These caught a real bug during development: counterfactual() and cmd_score
+# used mismatched dict keys ("weighted_impact" vs "impact"), and it only
+# surfaced by actually invoking the CLI entrypoint -- unit tests calling
+# counterfactual() directly never exercised the mismatched key. Test quality
+# over test count: exercise the actual command a user runs.
+
+def test_cli_score_what_if_end_to_end(tmp_path, capsys):
+    from orchestrate_kit.cli import main
+    _write_clean_submission(tmp_path)
+    rc = main(["score", "--repo", str(tmp_path), "--what-if", "output", "5",
+              "--no-history"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "EXPECTED WEIGHTED IMPACT" in out
+
+
+def test_cli_score_audit_end_to_end(capsys):
+    from orchestrate_kit.cli import main
+    rc = main(["score", "--audit"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "PHASE 1 SCORE ENGINE HEALTH" in out
+    assert "OVERALL: TRUSTWORTHY" in out
+
+
+def test_cli_score_plain_end_to_end(tmp_path, capsys):
+    from orchestrate_kit.cli import main
+    _write_clean_submission(tmp_path)
+    rc = main(["score", "--repo", str(tmp_path), "--no-history"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "CONSISTENCY AUDIT" in out
+    assert "HIGHEST-LEVERAGE NEXT CHANGE" in out

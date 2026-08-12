@@ -455,6 +455,15 @@ def run_terminal(persona_key: str = "skeptic", difficulty_key: str = "standard",
         from datetime import datetime, timezone
 
         total = int(round(sum(t.score for t in iv.turns) / len(iv.turns)))
+        # Raw answer text is persisted (not just the score) so the score
+        # engine's cross-signal consistency layer can check interview
+        # claims -- "we use BM25 k1=1.5" -- against the actual code. A
+        # bare aggregate score gives that layer nothing to check.
+        answers = []
+        for t in iv.turns:
+            answers.append({"topic": t.question.topic, "text": t.answer})
+            for _, reply, _ in t.follow_ups:
+                answers.append({"topic": t.question.topic, "text": reply})
         record = {
             "score": total,
             "persona": "panel" if panel else persona.key,
@@ -462,6 +471,7 @@ def run_terminal(persona_key: str = "skeptic", difficulty_key: str = "standard",
             "questions_answered": len(iv.turns),
             "questions_requested": n,
             "saved_at": datetime.now(timezone.utc).isoformat(),
+            "answers": answers,
         }
         Path(save_path).write_text(json.dumps(record, indent=2), encoding="utf-8")
         print(f"\nsaved interview result -> {save_path}")

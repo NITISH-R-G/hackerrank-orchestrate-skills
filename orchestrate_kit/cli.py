@@ -265,12 +265,28 @@ def cmd_interview(args) -> int:
         save_path=args.save)
 
 
+def _load_interview_answers(interview_path: Path | None) -> list[str] | None:
+    if interview_path is None or not interview_path.exists():
+        return None
+    import json
+    try:
+        record = json.loads(interview_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    return [a.get("text", "") for a in record.get("answers", [])] or None
+
+
 def cmd_score(args) -> int:
-    from .score.scoreboard import build_scorecard, render_scoreboard
+    from .score.scoreboard import build_scorecard, counterfactual, render_scoreboard
 
     repo_root = Path(args.repo)
     transcript_path = Path(args.transcript) if args.transcript else None
     interview_path = Path(args.interview_result) if args.interview_result else None
+
+    if getattr(args, "audit", False):
+        from .score.health import render_health_report
+        print(render_health_report())
+        return 0
 
     card = build_scorecard(repo_root, python=args.python,
                            transcript_path=transcript_path,
@@ -278,7 +294,28 @@ def cmd_score(args) -> int:
     if args.official_score is not None:
         card.official_score = args.official_score
 
-    print(render_scoreboard(card, repo_root, save_history=not args.no_history))
+    if getattr(args, "what_if", None):
+        sig, delta_s = args.what_if
+        result = counterfactual(card, sig, float(delta_s))
+        if "error" in result:
+            print(result["error"])
+            return 1
+        if result["impact"] is None:
+            print(f"{result['reason']}")
+            return 0
+        print(f"CURRENT: {result['label']} = {result['current_score']:.1f}/100")
+        print(f"IF IT CHANGES BY {result['delta_requested']:+.1f}:")
+        print(f"  EXPECTED WEIGHTED IMPACT ON OVERALL SCORE: "
+             f"{result['weighted_impact']:+.2f}")
+        print(f"  (signal weight: {result['weight'] * 100:.0f}%; this "
+             "assumes the change is achievable -- it is not a prediction "
+             "that it will happen)")
+        return 0
+
+    interview_answers = _load_interview_answers(interview_path)
+    print(render_scoreboard(card, repo_root, save_history=not args.no_history,
+                           transcript_path=transcript_path,
+                           interview_answers=interview_answers))
     return 0
 
 
@@ -527,6 +564,13 @@ def build_parser() -> argparse.ArgumentParser:
                          "calibration comparison only")
     sc.add_argument("--no-history", action="store_true",
                     help="do not record this run in the local score history")
+    sc.add_argument("--what-if", nargs=2, metavar=("SIGNAL", "DELTA"),
+                    help="e.g. --what-if output +5 -- shows the weighted "
+                         "impact IF that signal moved by DELTA points; "
+                         "does not predict whether it's achievable")
+    sc.add_argument("--audit", action="store_true",
+                    help="run the score engine's own health check "
+                         "(adversarial self-test) instead of scoring a repo")
     sc.set_defaults(fn=cmd_score)
 
     t = sub.add_parser("transcript",

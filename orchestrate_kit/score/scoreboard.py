@@ -1,6 +1,13 @@
 """Assembles all four signal scorers into one ScoreCard and renders the
 scoreboard report format. This is the only place that combines signals --
-each scorer in this package stays independent and testable on its own."""
+each scorer in this package stays independent and testable on its own.
+
+Also owns: score history (for delta/attribution across runs), the
+cross-signal consistency section, counterfactual "what if signal X moved
+by N" math, and ranking which signal is the highest-leverage next thing
+to work on. All of it derives from the same four SignalScores -- no
+second, parallel scoring system.
+"""
 
 from __future__ import annotations
 
@@ -8,9 +15,10 @@ import json
 from pathlib import Path
 
 from .code_zip import score_code
+from .consistency import run_all as run_consistency_checks
 from .interview_signal import score_interview
 from .output_csv import score_output
-from .signals import DISCLAIMER, ScoreCard
+from .signals import DISCLAIMER, OFFICIAL_WEIGHTS, ScoreCard
 from .transcript_signal import score_transcript
 
 
@@ -20,7 +28,7 @@ def build_scorecard(repo_root: Path, python: str = "python",
     signals = [
         score_code(repo_root),
         score_output(repo_root, python=python),
-        score_interview(interview_result_path),
+        score_interview(interview_result_path, repo_root=repo_root),
         score_transcript(transcript_path),
     ]
     return ScoreCard(signals=signals)
@@ -29,36 +37,138 @@ def build_scorecard(repo_root: Path, python: str = "python",
 _HISTORY_FILE = ".orchestrate_score_history.json"
 
 
-def _load_previous(repo_root: Path) -> float | None:
+def _load_history(repo_root: Path) -> list[dict]:
     p = repo_root / _HISTORY_FILE
     if not p.exists():
-        return None
+        return []
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return None
-    history = data.get("history", [])
+        return []
+    return data.get("history", [])
+
+
+def _load_previous(repo_root: Path) -> float | None:
+    history = _load_history(repo_root)
     return history[-1]["weighted_estimate"] if history else None
 
 
 def record_history(repo_root: Path, card: ScoreCard) -> None:
     p = repo_root / _HISTORY_FILE
-    data = {"history": []}
-    if p.exists():
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            data = {"history": []}
-    data.setdefault("history", []).append({
+    data = {"history": _load_history(repo_root)}
+    data["history"].append({
         "weighted_estimate": card.weighted_estimate,
         "known_weight_fraction": card.known_weight_fraction,
         "signals": {s.name: s.estimated_score for s in card.signals},
+        # finding LABELS only (not full evidence text) -- enough to say
+        # "this specific finding appeared/disappeared" between two runs
+        # without the history file growing unboundedly.
+        "finding_labels": {s.name: sorted(f.label for f in s.findings)
+                          for s in card.signals},
     })
     p.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
+def _attribute_delta(repo_root: Path, card: ScoreCard) -> list[str]:
+    """Answers 'why did my score change' using ONLY evidence this system
+    actually has: the finding-label diff between the previous run and this
+    one for each signal. Never claims CONFIRMED causality from correlation
+    alone -- two runs changing together is not proof one caused the
+    other -- so the strongest label this can ever produce is POSSIBLE,
+    tied to a concrete finding that appeared or disappeared. No matching
+    finding diff -> UNKNOWN, not a fabricated story."""
+    history = _load_history(repo_root)
+    if len(history) < 1:
+        return []
+    prev = history[-1]
+    lines = ["", "SCORE ATTRIBUTION (previous run -> this run)"]
+    any_line = False
+    for s in card.signals:
+        prev_score = prev.get("signals", {}).get(s.name)
+        cur_score = s.estimated_score
+        if prev_score is None or cur_score is None:
+            continue
+        delta = cur_score - prev_score
+        if abs(delta) < 0.05:
+            continue
+        any_line = True
+        sign = "+" if delta >= 0 else ""
+        prev_labels = set(prev.get("finding_labels", {}).get(s.name, []))
+        cur_labels = {f.label for f in s.findings}
+        appeared = cur_labels - prev_labels
+        resolved = prev_labels - cur_labels
+        if resolved or appeared:
+            reason = "; ".join(
+                [f"resolved: {r}" for r in sorted(resolved)] +
+                [f"new: {a}" for a in sorted(appeared)])
+            lines.append(f"  {s.label} {sign}{delta:.2f}  "
+                         f"CAUSE: POSSIBLE ({reason})")
+        else:
+            lines.append(f"  {s.label} {sign}{delta:.2f}  CAUSE: UNKNOWN "
+                         "(score moved, no finding-level evidence why)")
+    return lines if any_line else []
+
+
+def counterfactual(card: ScoreCard, signal_name: str, delta: float) -> dict:
+    """'If Output improved by +5, what happens to the weighted estimate?'
+    Pure arithmetic over the published weight for that signal -- does NOT
+    predict whether such an improvement is achievable, only what it would
+    be worth if it happened."""
+    sig = next((s for s in card.signals if s.name == signal_name), None)
+    if sig is None:
+        return {"error": f"unknown signal '{signal_name}', choose from "
+                         f"{[s.name for s in card.signals]}"}
+    if sig.is_unknown:
+        return {"signal": signal_name, "impact": None,
+               "reason": f"{sig.label} is currently UNKNOWN -- no baseline "
+                        "to move from"}
+    new_score = max(0.0, min(100.0, sig.estimated_score + delta))
+    impact = (new_score - sig.estimated_score) * sig.official_weight
+    return {"signal": signal_name, "label": sig.label,
+           "current_score": sig.estimated_score, "delta_requested": delta,
+           "weight": sig.official_weight, "weighted_impact": impact,
+           "impact": impact}
+
+
+def next_best_experiment(card: ScoreCard) -> list[dict]:
+    """Ranks known signals by expected leverage, NOT by lowest score.
+    Leverage = official_weight * realistic_headroom, where headroom caps
+    at what confidence supports: a HEURISTIC signal's apparent gap to 100
+    is not assumed fully closeable the way a MEASURED one's is, so
+    heuristic headroom is discounted. This is still a rough proxy, not a
+    guaranteed achievable gain -- stated as 'expected impact', not
+    'guaranteed impact'."""
+    from .signals import Confidence
+
+    ranked = []
+    for s in card.signals:
+        if s.is_unknown:
+            ranked.append({
+                "signal": s.name, "label": s.label, "expected_impact": None,
+                "reason": "UNKNOWN -- no local score to improve from; "
+                         "supply the missing artifact first"})
+            continue
+        headroom = 100.0 - s.estimated_score
+        discount = {Confidence.MEASURED: 1.0, Confidence.HEURISTIC: 0.6,
+                   Confidence.UNKNOWN: 0.0}[s.confidence]
+        expected_impact = headroom * discount * s.official_weight / 100.0 * 10
+        ranked.append({
+            "signal": s.name, "label": s.label,
+            "expected_impact": round(expected_impact, 2),
+            "confidence": s.confidence.value,
+            "current_score": s.estimated_score,
+            "reason": f"{len(s.findings)} open finding(s), "
+                     f"{headroom:.0f} pts headroom to 100 "
+                     f"at {s.confidence.value} confidence"})
+    ranked.sort(key=lambda r: (r["expected_impact"] is None,
+                              -(r["expected_impact"] or 0)))
+    return ranked
+
+
 def render_scoreboard(card: ScoreCard, repo_root: Path,
-                      save_history: bool = True) -> str:
+                      save_history: bool = True,
+                      transcript_path: Path | None = None,
+                      interview_answers: list[str] | None = None) -> str:
     lines = ["HACKERRANK ORCHESTRATE SCOREBOARD", "=" * 34, ""]
 
     for s in card.signals:
@@ -123,8 +233,30 @@ def render_scoreboard(card: ScoreCard, repo_root: Path,
             lines.append(f"  Strongest known signal: {strongest.label} "
                          f"({strongest.estimated_score:.1f}/100)")
 
+        lines.extend(_attribute_delta(repo_root, card))
+
         if save_history:
             record_history(repo_root, card)
+
+    # ---- cross-signal consistency -----------------------------------
+    lines.append("")
+    lines.append("CONSISTENCY AUDIT")
+    checks = run_consistency_checks(repo_root, transcript_path=transcript_path,
+                                    interview_answers=interview_answers)
+    for c in checks:
+        lines.append(f"  {c.pair}")
+        lines.append(f"    {c.verdict}  -  {c.detail}")
+
+    # ---- highest-leverage next change --------------------------------
+    lines.append("")
+    lines.append("HIGHEST-LEVERAGE NEXT CHANGE")
+    for i, r in enumerate(next_best_experiment(card), 1):
+        if r["expected_impact"] is None:
+            lines.append(f"  {i}. {r['label']}  --  {r['reason']}")
+        else:
+            lines.append(f"  {i}. {r['label']}  expected impact "
+                         f"+{r['expected_impact']:.2f}  "
+                         f"[{r['confidence']}]  -  {r['reason']}")
 
     lines.append("")
     lines.append(DISCLAIMER)
