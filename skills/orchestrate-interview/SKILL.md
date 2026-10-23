@@ -53,3 +53,14 @@ Model-answer examples and judge-prep notes: `references/judge-prep.md` in `orche
 ## References in this skill
 - `references/CONSTANTS-template.md`
 - `references/interview-coach.md`, `references/interview-readiness.md`, `references/mentor.md`
+
+## Goal mode (prepare the interview)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal CONSTANTS.md has a provenance label for every numeric constant in code, each of the nine topics has a prepared answer with one mechanism, one number and one limit, and the rejection story is written. Stop after 40 turns.
+```
+
+Each turn, print how many constants are unlabelled and which topic is still thin. Creative freedom: rewrite answers freely, but every claim must match what the code actually does; check the code before writing it.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

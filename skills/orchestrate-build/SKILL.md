@@ -46,3 +46,14 @@ Build done when:
 ## Templates and notes
 - `references/past-problems.md` - what the four past rounds (May, June, August, September 2026) required, procedures for each, and the evidence checks run against them
 - `references/DESIGN-template.md` - the design template
+
+## Goal mode (build the agent)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal the pipeline runs end to end on the current input with scripts/run_pipeline.py, every output value is in the allowed set, a row that throws does not stop the run, and DESIGN.md's review gate is fully ticked. Stop after 60 turns.
+```
+
+Each turn, print the run summary line (rows written, failures handled). Creative freedom: choose architecture, prompts and retrieval freely, but record the choice and its rejected alternative in DESIGN.md.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

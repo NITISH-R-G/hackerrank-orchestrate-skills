@@ -44,3 +44,14 @@ Every sample row is either correct or explained, the output is stable across two
 
 ## Next
 `orchestrate-submit`. Start `orchestrate-interview` prep in parallel.
+
+## Goal mode (drive the output up)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal the sample run has every row classified as RULE or MISREAD, each wrong row has a change record with SHIP, and two consecutive runs produce identical output. Stop after 80 turns.
+```
+
+Each turn, print the sample accuracy per column and the list of still-wrong rows. Creative freedom: try any approach that fixes a wrong row, but never tune to a sample row alone and revert any change that breaks a correct row.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

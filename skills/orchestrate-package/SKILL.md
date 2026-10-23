@@ -59,3 +59,14 @@ Upload exactly what the problem statement lists, from `submission/`. Do not uplo
 - If the checker reports a shape problem you cannot fix in time, submit the best valid file you have and say what is wrong in the README.
 
 Related: `orchestrate-submit` (self-scoring and hardening), `orchestrate-score` (estimated score), `orchestrate-reference` (release checklist).
+
+## Goal mode (readiness)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal package_submission.py reports READY TO SUBMIT and the submission/ folder contains output.csv, code.zip, README.md and the transcript. Stop after 30 turns.
+```
+
+Each turn, print the checker output. Creative freedom: fix anything the checker flags in the repo, but never edit output.csv by hand.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

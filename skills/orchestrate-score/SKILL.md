@@ -71,3 +71,14 @@ It prints, per section, the estimate, the official percentage and the gap, and w
 - Label every number as MEASURED (you ran it), ESTIMATED (heuristic or judgement), or NOT CHECKED.
 - Do not compare your estimate with another team's score unless both used the same method.
 - Never write a number that the challenge did not publish as if it were the official score.
+
+## Goal mode (estimate and improve)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal the score estimate exists for all four sections with evidence labels (MEASURED, ESTIMATED or NOT CHECKED), the weakest section has a planned fix, and calibrate.py has been run if official_scores.json exists. Stop after 40 turns.
+```
+
+Each turn, print the four section estimates and the weakest one. Creative freedom: improve the estimator's logic, but do not change published weights.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

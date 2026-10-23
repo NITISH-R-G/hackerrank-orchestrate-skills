@@ -101,3 +101,14 @@ Details: `references/transcript-engineering.md` and `references/ai-collaboration
 - `references/phase-gates.md` - the gate sequence from past rounds
 - `references/scoring-rubric.md` - sub-weights for each section and judge probe order
 - `references/transcript-engineering.md`, `references/ai-collaboration-transcript.md` - transcript scoring detail
+
+## Goal mode (run the whole challenge)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal the challenge repo has output.csv for every input row, it passes skills/orchestrate-package/scripts/package_submission.py with no FAIL, the self-score in orchestrate-score has a named weakest section with its fix applied, and the interview CONSTANTS.md covers every number in the code. Stop after 150 turns.
+```
+
+Each turn, print the current checker result and the weakest section. Creative freedom: you may change the design, prompts, or rules to raise the score, but each change needs a change record (CHANGE, rows it should fix, rows it could break, VERDICT) and is kept only if no previously correct row breaks.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

@@ -27,3 +27,8 @@ Works in any AI agent. Read the table, pick the row that matches where you are, 
 
 - Claude Code: `scripts/install-skills.sh` or `scripts/install-skills.ps1` (copies to `~/.claude/skills`).
 - Other agents: point them at this file, or paste `orchestrate/SKILL.md` into the agent's instruction file. The root `AGENTS.md` is read by Codex, Cursor, Copilot and most other agents.
+
+## Goal conditions (keep working until the skill's job is done)
+
+Each phase skill has a `Goal mode` section with a condition to paste into `/goal`. A skill cannot start its own goal, so you set it once per phase. `/goal` keeps Claude working after each turn until the condition holds. Use `/goal clear` to stop early. The evaluator only reads the transcript, so the skill tells Claude what evidence to print each turn.
+

@@ -30,3 +30,14 @@ The release checklist is fully ticked with proof, the clean-folder run reproduce
 
 ## Next
 Nothing. Finish interview prep if you have not.
+
+## Goal mode (ship a clean submission)
+Run this in the session (the skill cannot set it for you):
+
+```text
+/goal orchestrate-package reports READY TO SUBMIT, the self-score has every section scored with evidence, and the release checklist in orchestrate-reference has a command output for every line. Stop after 40 turns.
+```
+
+Each turn, print the checker's PASS/FAIL lines. Creative freedom: fix any failing item in code or docs, but do not change the output contract to make a check pass.
+
+The goal evaluator only sees what appears in the transcript, so print the evidence each turn. It clears the goal when the condition is met, or when it judges it impossible.

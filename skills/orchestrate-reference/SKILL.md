@@ -23,3 +23,6 @@ CHANGE / REQUIREMENT / CLAIM / METRIC / BASELINE / RESULT / BLAST RADIUS / COUNT
 
 ## Caution
 Figures in these files come from past rounds and user reports. Re-verify against the current challenge before quoting any of them. Do not state a number from here as your own result.
+
+## Goal mode
+This skill is a lookup library, so it has no completion goal of its own. Use the goal conditions in the phase skills instead.
