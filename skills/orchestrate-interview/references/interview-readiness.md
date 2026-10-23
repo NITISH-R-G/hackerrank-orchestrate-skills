@@ -72,4 +72,4 @@ Don't rehearse polish; rehearse specificity under pressure:
 
 - **Don't memorize a script.** A rehearsed-sounding answer to an unexpected question angle reads worse than an honest, structured-on-the-fly answer. Rehearse the *method* (claim → evidence → reasoning → caveat), not word-for-word text.
 - **Don't inflate.** An evidence-anchored scorer that can't verify a claim against the transcript/system either scores it 0 (not assessed) or catches the inflation in a follow-up question. Understating with real specifics beats overstating with none.
-- **Don't treat the interview as separate from the build.** The best prep is genuinely understanding your own tradeoffs during Gates 2–5 (`orchestrate-phase-gates`), not a cram session at hour 20. If you made decisions deliberately and can already state why, this whole skill is just organizing what you already know.
+- **Don't treat the interview as separate from the build.** The best prep is genuinely understanding your own tradeoffs during Gates 2–5 (`orchestrate`), not a cram session at hour 20. If you made decisions deliberately and can already state why, this whole skill is just organizing what you already know.

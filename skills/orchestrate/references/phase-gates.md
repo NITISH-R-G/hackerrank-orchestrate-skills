@@ -1,5 +1,5 @@
 ---
-name: orchestrate-phase-gates
+name: orchestrate
 description: The master sequencing skill for HackerRank Orchestrate (or any timeboxed agent-building hackathon) — enforces an ordered set of quality gates from planning through submission, and names which companion skill owns each gate. Use this at the START of any Orchestrate-style challenge, whenever the user mentions HackerRank Orchestrate, an agent-building hackathon, a 24-hour AI agent challenge, or asks "what should I do next" mid-build. Also use when a submission deadline is approaching and you need to know what's still unchecked.
 ---
 

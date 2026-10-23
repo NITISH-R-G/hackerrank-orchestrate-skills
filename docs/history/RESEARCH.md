@@ -1,3 +1,5 @@
+> **History document.** Written during the kit's development. Skill names and file paths inside refer to the layout before the six-skill restructure; current skills are listed in `skills/INDEX.md`.
+
 # The Orchestrate Intelligence Layer
 
 **34 skills**, plus the `orchestrate_kit` toolkit, for maximizing performance in HackerRank Orchestrate — and, not incidentally, for building genuinely better AI agents regardless of who's grading.

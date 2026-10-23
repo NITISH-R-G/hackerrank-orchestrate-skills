@@ -1,3 +1,5 @@
+> **History document.** Written during the kit's development. Skill names and file paths inside refer to the layout before the six-skill restructure; current skills are listed in `skills/INDEX.md`.
+
 # Architecture Evolution
 
 `orchestrate_kit`'s current architecture is correct **for its current

@@ -53,7 +53,7 @@ Concretely: pause before sending a request and ask "if someone read only this me
 ## What NOT to do
 
 - **Don't retroactively narrate.** Padding an already-completed session with fake planning messages after the fact reads as exactly what it is, and dishonest self-presentation is the opposite of the "self-awareness" trait being scored elsewhere in this same evaluation.
-- **Don't perform for the transcript at the expense of actually building.** A transcript full of eloquent planning attached to a broken agent scores badly everywhere else — this is 10% of the score, not the whole thing. See `orchestrate-phase-gates` for time allocation.
+- **Don't perform for the transcript at the expense of actually building.** A transcript full of eloquent planning attached to a broken agent scores badly everywhere else — this is 10% of the score, not the whole thing. See `orchestrate` for time allocation.
 - **Don't over-explain trivial requests.** Constraint-stating and reasoning are for decisions that matter. "Fix this typo" doesn't need a paragraph. Reserve the discipline for moments where judgment is actually being exercised.
 
 ## Structure the transcript in three explicit phases

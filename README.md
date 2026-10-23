@@ -28,6 +28,8 @@ Six Claude Code skills in `skills/`. Install by copying each folder into `~/.cla
 
 Order: `orchestrate` -> `orchestrate-build` -> `orchestrate-test-fix` -> `orchestrate-submit`, with `orchestrate-interview` running in parallel from mid-build.
 
+**Works in any agent.** The skills are plain markdown. `AGENTS.md` is the shared entry point for Codex, Cursor, Copilot and others; `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` and `.cursor/rules/` point to it. Install into Claude Code with `scripts/install-skills.ps1` or `scripts/install-skills.sh`, or into any other skills folder with `--dest`. See `skills/INDEX.md`.
+
 | This repo gives you | Targets |
 |---|---|
 | `orchestrate transcript` — a rubric-verified linter for your chat transcript, not a prompt library | AI Chat Transcript |

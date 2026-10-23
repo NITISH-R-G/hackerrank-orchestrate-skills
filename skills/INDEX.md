@@ -1,0 +1,27 @@
+# Orchestrate skills - index
+
+Works in any AI agent. Read the table, pick the row that matches where you are, open that skill's `SKILL.md`.
+
+| Where you are | Open this skill |
+|---|---|
+| Just started, or unsure what is next | `orchestrate/SKILL.md` |
+| Read the problem, need a design, now building | `orchestrate-build/SKILL.md` |
+| Pipeline runs on sample, need to find wrong rows | `orchestrate-test-fix/SKILL.md` |
+| Rows are wrong or weakly justified | `orchestrate-test-fix/SKILL.md` (Part B) |
+| Output is stable, need scores, security, packaging | `orchestrate-submit/SKILL.md` |
+| Preparing for the AI judge interview | `orchestrate-interview/SKILL.md` |
+| Need a ready-to-paste prompt, principle, or checklist | `orchestrate-reference/SKILL.md` |
+
+## Order
+
+1. `orchestrate` (read first, re-read on failure)
+2. `orchestrate-build`
+3. `orchestrate-test-fix`
+4. `orchestrate-submit`
+
+`orchestrate-interview` runs in parallel from mid-build. `orchestrate-reference` is lookup only.
+
+## Installing the skills into a harness
+
+- Claude Code: `scripts/install-skills.sh` or `scripts/install-skills.ps1` (copies to `~/.claude/skills`).
+- Other agents: point them at this file, or paste `orchestrate/SKILL.md` into the agent's instruction file. The root `AGENTS.md` is read by Codex, Cursor, Copilot and most other agents.
