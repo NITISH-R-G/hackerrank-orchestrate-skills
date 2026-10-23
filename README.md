@@ -13,6 +13,34 @@ balanced across all four, not excellent at one. Every tool here targets
 one or more of those four signals directly, not generic "AI engineering
 best practice."
 
+## FAQ: HackerRank Orchestrate
+
+> **Unofficial.** This is a community project. It is not made by or affiliated with HackerRank. The official challenge pages are at [hackerrank.com](https://www.hackerrank.com/).
+
+**What is HackerRank Orchestrate?**
+A 24-hour hackathon run by HackerRank in which developers build an AI agent for a given problem. Each submission is graded on four signals: the code, the output CSV, an AI chat transcript, and a 30-minute AI judge interview.
+
+**How is an Orchestrate submission scored?**
+HackerRank's published formula is `Final = 0.10 x Chat + 0.30 x Interview + 0.30 x Output CSV + 0.30 x Code ZIP`. Ties break in the order Interview, Code ZIP, Output CSV, Chat. Sub-weights per signal are in [`skills/orchestrate-score/references/scoring-model.md`](skills/orchestrate-score/references/scoring-model.md), with the sources.
+
+**Which past problems has this covered?**
+The May 2026 support-triage round, the June 2026 multi-modal claims round, the August 2026 message-notification router, and the September 2026 "Buy or Wait" financial round. Each one's requirements and procedures are in [`skills/orchestrate-build/references/past-problems.md`](skills/orchestrate-build/references/past-problems.md).
+
+**Which AI coding tools can use these skills?**
+Claude Code (installed by script), and any agent that reads `AGENTS.md` (Codex, Cursor, GitHub Copilot, Gemini CLI and others). Start with [`skills/INDEX.md`](skills/INDEX.md).
+
+**How do I install the skills for Claude Code?**
+On Windows, run `scripts/install-skills.ps1`. On macOS or Linux, run `scripts/install-skills.sh`. Both copy every skill into `~/.claude/skills`. Use `--dest` (or `-Dest`) for another skills folder.
+
+**Where do I start?**
+Read [`skills/orchestrate/SKILL.md`](skills/orchestrate/SKILL.md). It has the phase order and what to do when a step fails.
+
+**Does this give the winning answer?**
+No. There is no published grader, and the scorer here is an estimate. Read [`skills/orchestrate-score/references/scoring-model.md`](skills/orchestrate-score/references/scoring-model.md) for what is verified and what is not.
+
+**Can I check a submission before uploading?**
+Yes. `skills/orchestrate-package/scripts/package_submission.py` checks the output file, columns, row coverage, allowed values, code, README, transcript and secrets, then builds a `submission/` folder.
+
 ## Orchestrate skills (start here)
 
 Eight Claude Code skills in `skills/`. Install by copying each folder into `~/.claude/skills/`.
