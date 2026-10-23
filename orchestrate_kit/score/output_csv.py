@@ -35,6 +35,11 @@ _PENALTY = {Severity.BLOCKER: 100, Severity.HIGH: 25, Severity.MEDIUM: 10,
            Severity.LOW: 3, Severity.INFO: 0}
 
 
+JUSTIFICATION_COLUMNS = (
+    "reason", "justification", "claim_status_justification", "decision_explanation",
+)
+
+
 def _justification_finding(ctx: RepoContext) -> tuple[Finding | None, float]:
     """Per-row justification quality. Confirmed gap in the shared
     evaluator: `audit_output_sanity` only flags reasons that are IDENTICAL
@@ -48,16 +53,20 @@ def _justification_finding(ctx: RepoContext) -> tuple[Finding | None, float]:
     if not text:
         return None, 0.0
     rows = list(csv.DictReader(io.StringIO(text)))
-    if not rows or "reason" not in rows[0]:
+    # Justification column differs by round: May 'reason'-style, June
+    # 'claim_status_justification', Sept 'decision_explanation'. Use the first
+    # one present; a round with none of them is reported as unchecked.
+    column = next((c for c in JUSTIFICATION_COLUMNS if rows and c in rows[0]), None)
+    if column is None:
         return None, 0.0
-    blank = sum(1 for r in rows if not r.get("reason", "").strip())
+    blank = sum(1 for r in rows if not (r.get(column) or "").strip())
     if not blank:
         return None, 0.0
     fraction = blank / len(rows)
     penalty = min(60.0, 100.0 * fraction)
     return Finding(
         "blank justification",
-        f"{blank}/{len(rows)} row(s) have an empty 'reason' field -- a "
+        f"{blank}/{len(rows)} row(s) have an empty '{column}' field -- a "
         "correct action with no justification is not equivalent to one "
         "with a grounded justification"), penalty
 

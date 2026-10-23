@@ -573,3 +573,20 @@ def test_cli_score_plain_end_to_end(tmp_path, capsys):
     assert rc == 0
     assert "CONSISTENCY AUDIT" in out
     assert "HIGHEST-LEVERAGE NEXT CHANGE" in out
+
+
+def test_blank_justification_detected_under_any_round_column(tmp_path):
+    """Each round names its justification column differently. The penalty must
+    apply to all of them, not only the May-style 'reason' column."""
+    from orchestrate_kit.score.output_csv import _justification_finding
+    from orchestrate_kit.evaluator.plugin_api import RepoContext
+
+    for column in ("reason", "claim_status_justification", "decision_explanation"):
+        root = tmp_path / column
+        (root / "dataset").mkdir(parents=True)
+        (root / "dataset" / "output.csv").write_text(
+            f"request_id,{column}\nr1,ok\nr2,\n", encoding="utf-8")
+        finding, penalty = _justification_finding(RepoContext(root=root))
+        assert finding is not None, column
+        assert penalty == 50.0, column
+        assert column in finding.detail, column
