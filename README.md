@@ -13,6 +13,21 @@ balanced across all four, not excellent at one. Every tool here targets
 one or more of those four signals directly, not generic "AI engineering
 best practice."
 
+## Orchestrate skills (start here)
+
+Six Claude Code skills in `skills/`. Install by copying each folder into `~/.claude/skills/`.
+
+| Skill | Run it when |
+|---|---|
+| `orchestrate` | Start of the challenge, and whenever a step fails. Master plan and failure routing |
+| `orchestrate-build` | Reading the problem; then DESIGN.md and building the agent |
+| `orchestrate-test-fix` | Pipeline runs on sample; find and fix wrong rows |
+| `orchestrate-submit` | Output is stable; self-score, harden, spec audit, package |
+| `orchestrate-interview` | From mid-build; constants sheet, nine judge topics, rehearsal |
+| `orchestrate-reference` | Any time you need a prompt, a principle, or a checklist |
+
+Order: `orchestrate` -> `orchestrate-build` -> `orchestrate-test-fix` -> `orchestrate-submit`, with `orchestrate-interview` running in parallel from mid-build.
+
 | This repo gives you | Targets |
 |---|---|
 | `orchestrate transcript` — a rubric-verified linter for your chat transcript, not a prompt library | AI Chat Transcript |

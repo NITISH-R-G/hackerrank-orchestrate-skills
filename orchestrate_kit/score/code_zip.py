@@ -35,7 +35,7 @@ _SKIP_DIRS = {".git", "__pycache__", "build", "dist", ".venv", "venv",
               "node_modules", "site-packages"}
 
 # A real API key never belongs in source -- HackerRank's own starter repo
-# guidance (quoted in skills/orchestrate-secrets-and-determinism) says
+# guidance (quoted in skills/orchestrate-build/references/secrets-and-determinism.md) says
 # secrets must come from env vars. This is a cheap, high-precision check:
 # a 20+ char alnum literal assigned to something named like a key.
 _HARDCODED_SECRET = re.compile(
