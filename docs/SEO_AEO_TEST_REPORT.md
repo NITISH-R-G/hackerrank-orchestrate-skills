@@ -7,11 +7,13 @@ Date: 2026-10-23. Commands and results below were run on the working tree before
 | Measure | Value |
 |---|---|
 | Country and query pairs planned | 20 |
-| Observations recorded | 11 |
-| Not tested | 9 |
+| Observations recorded | 15 |
+| Not tested | 5 |
 | Repository in first place | 6 |
 | Blocked by Google | 4 |
-| Absent from top nine | 1 |
+| Absent from top nine (Google) | 1 |
+| Absent from top five (Bing) | 3 |
+| Anomalous result (Bing, unrelated content) | 1 |
 
 Notes on these numbers:
 - "Observations recorded" includes the four blocked attempts. Those are recorded as blocked, not as results.
@@ -19,16 +21,19 @@ Notes on these numbers:
 - The one absent result is for the broad query `hackerrank orchestrate` in the United States. The top nine results did not include the repository.
 - Google's "unusual traffic" page blocked Singapore, the United Kingdom, Germany and Japan. Those were not retried.
 
+## Bing
+Bing was checked for the same query with the `cc=` country hint, using the browser tab. Results: India, United States and Singapore did not include the repository in the top five; the United Kingdom returned unrelated adult-content results, so that result is recorded as anomalous and not as a ranking. Bing's first-place count is therefore zero.
+
 ## Providers not tested
-- Bing, DuckDuckGo and other search engines: not tested in this run.
+- DuckDuckGo and other search engines: not tested in this run.
 - AI assistants (ChatGPT, Claude, Gemini, Perplexity): not tested. The browser available here cannot run them logged out in a reproducible way, and no authorised access was provided.
-- Google only, and only with the `gl=` hint.
+- Google and Bing only, both with a country hint.
 
 ## Automated tests
 
 Command: `python -m pytest -q`
 
-Result: all 186 tests in the suite pass, of which 24 are the new checks in `tests/test_seo_research.py`. Zero failures. Each of the ten mandatory checks maps to a test:
+Result: all 192 tests in the suite pass, of which 30 are checks in `tests/test_seo_research.py` (research data, links, citation metadata, secrets, documentation, the generated site and the Bing observations). Zero failures. Each of the ten mandatory checks maps to a test:
 
 | # | Check | Test or evidence | Result |
 |---|---|---|---|
@@ -48,7 +53,8 @@ Result: all 186 tests in the suite pass, of which 24 are the new checks in `test
 - `ruff`: available (version 0.15.14), but the repository has no lint configuration, so no lint result is claimed.
 
 ## Deployment
-- No website exists, so no live site was validated.
+- A static site is generated in `site/` (`scripts/build_site.py`). It is NOT published.
+- No live site was validated. Steps needing approval are in `docs/DEPLOY_GITHUB_PAGES.md`.
 - Live search-ranking checks are in `docs/COUNTRY_VISIBILITY.md`.
 
 ## Refresh commands

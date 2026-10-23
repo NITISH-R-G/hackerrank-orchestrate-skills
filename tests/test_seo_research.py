@@ -220,3 +220,58 @@ def test_seo_test_report_numbers_match_the_dataset():
     assert f"| Observations recorded | {s['observed']} |" in report
     assert f"| Repository in first place | {s['first_place']} |" in report
     assert f"| Blocked by Google | {s['by_status'].get('blocked', 0)} |" in report
+
+
+# --- Site and Bing checks added with the Pages preparation ---
+import subprocess as _sp  # noqa: E402
+
+SITE_BASE = "https://nitish-r-g.github.io/hackerrank-orchestrate-skills/"
+
+
+def test_generated_site_is_up_to_date():
+    rc = _sp.run([sys.executable, str(ROOT / "scripts" / "build_site.py"), "--check"], cwd=ROOT, capture_output=True)
+    assert rc.returncode == 0, rc.stdout
+
+
+def test_site_canonical_sitemap_and_robots_agree():
+    html_text = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    assert f'<link rel="canonical" href="{SITE_BASE}">' in html_text
+    sitemap = (ROOT / "site" / "sitemap.xml").read_text(encoding="utf-8")
+    assert f"<loc>{SITE_BASE}</loc>" in sitemap
+    robots = (ROOT / "site" / "robots.txt").read_text(encoding="utf-8")
+    assert f"Sitemap: {SITE_BASE}sitemap.xml" in robots
+    assert "Disallow: /" not in robots
+
+
+def test_site_json_ld_parses_and_is_truthful():
+    html_text = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    m = re.search(r'application/ld\+json">(.*?)</script>', html_text, re.S)
+    assert m, "no JSON-LD block"
+    ld = json.loads(m.group(1))
+    assert ld["@type"] == "WebPage"
+    assert "not affiliated" in ld["disclaimer"].lower()
+    assert ld["url"] == SITE_BASE
+
+
+def test_site_meta_and_visible_content_match():
+    html_text = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    matrix = load("data/country-query-matrix.json")
+    assert "<title>" in html_text and 'name="description"' in html_text
+    assert f"<td>{matrix['summary']['first_place']}</td>" in html_text
+    assert f"<td>{matrix['summary']['observed']}</td>" in html_text
+
+
+def test_bing_observations_never_count_as_first_place_without_a_result():
+    matrix = load("data/country-query-matrix.json")
+    bing = [o for o in matrix["observations"] if o["provider"] == "bing-web"]
+    assert bing, "Bing observations missing"
+    assert all(o["status"] != "first" for o in bing)
+    assert all(o["result_url"] is None for o in bing if o["status"] != "first")
+    for o in bing:
+        assert o["status"] in {"absent_top5", "anomalous", "blocked", "absent_top9"}, o
+
+
+def test_deployment_doc_states_nothing_is_published():
+    doc = (ROOT / "docs" / "DEPLOY_GITHUB_PAGES.md").read_text(encoding="utf-8")
+    assert "not deployed" in doc.lower()
+    assert "approval" in doc.lower()

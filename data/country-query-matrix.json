@@ -185,17 +185,59 @@
       "status": "absent_top9",
       "result_url": null,
       "limitation": "Top nine results checked; repository not among them. Official HackerRank pages rank first."
+    },
+    {
+      "country_code": "IN",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top5",
+      "result_url": null,
+      "limitation": "cc=IN hint; top five checked (WhatsApp, Sterling and Wilson pages); repository not among them"
+    },
+    {
+      "country_code": "US",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top5",
+      "result_url": null,
+      "limitation": "cc=US hint; top five checked (HackerRank pages); repository not among them"
+    },
+    {
+      "country_code": "SG",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top5",
+      "result_url": null,
+      "limitation": "cc=SG hint; top five checked (unrelated stock pages); repository not among them"
+    },
+    {
+      "country_code": "GB",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "anomalous",
+      "result_url": null,
+      "limitation": "cc=GB hint returned unrelated adult-content results for this query; treated as an unreliable result, not a ranking"
     }
   ],
   "summary": {
     "country_query_pairs_planned": 20,
-    "observed": 11,
-    "untested": 9,
+    "observed": 15,
+    "untested": 5,
     "first_place": 6,
     "by_status": {
       "first": 6,
       "blocked": 4,
-      "absent_top9": 1
+      "absent_top9": 1,
+      "absent_top5": 3,
+      "anomalous": 1
     }
   }
 }

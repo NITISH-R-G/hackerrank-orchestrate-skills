@@ -1,32 +1,229 @@
 {
   "retrieved_on": "2026-10-23",
   "countries": [
-    {"code": "CA", "name": "Canada", "region": "North America", "source": "tested country hint, not a participation record"},
-    {"code": "MX", "name": "Mexico", "region": "North America", "source": "tested country hint, not a participation record"},
-    {"code": "US", "name": "United States", "region": "North America", "source": "tested country hint, not a participation record"},
-    {"code": "AU", "name": "Australia", "region": "APAC", "source": "tested country hint, not a participation record"},
-    {"code": "IN", "name": "India", "region": "APAC", "source": "tested country hint, not a participation record"},
-    {"code": "SG", "name": "Singapore", "region": "APAC", "source": "tested country hint, not a participation record"},
-    {"code": "JP", "name": "Japan", "region": "APAC", "source": "tested country hint, not a participation record"},
-    {"code": "BR", "name": "Brazil", "region": "South America", "source": "tested country hint, not a participation record"},
-    {"code": "GB", "name": "United Kingdom", "region": "Europe", "source": "tested country hint, not a participation record"},
-    {"code": "DE", "name": "Germany", "region": "Europe", "source": "tested country hint, not a participation record"}
+    {
+      "code": "CA",
+      "name": "Canada",
+      "region": "North America",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "MX",
+      "name": "Mexico",
+      "region": "North America",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "US",
+      "name": "United States",
+      "region": "North America",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "AU",
+      "name": "Australia",
+      "region": "APAC",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "IN",
+      "name": "India",
+      "region": "APAC",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "SG",
+      "name": "Singapore",
+      "region": "APAC",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "JP",
+      "name": "Japan",
+      "region": "APAC",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "BR",
+      "name": "Brazil",
+      "region": "South America",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "GB",
+      "name": "United Kingdom",
+      "region": "Europe",
+      "source": "tested country hint, not a participation record"
+    },
+    {
+      "code": "DE",
+      "name": "Germany",
+      "region": "Europe",
+      "source": "tested country hint, not a participation record"
+    }
   ],
   "queries": [
-    {"id": "q1", "text": "hackerrank orchestrate agent skills github", "language_hint": "en"},
-    {"id": "q2", "text": "hackerrank orchestrate", "language_hint": "en"}
+    {
+      "id": "q1",
+      "text": "hackerrank orchestrate agent skills github",
+      "language_hint": "en"
+    },
+    {
+      "id": "q2",
+      "text": "hackerrank orchestrate",
+      "language_hint": "en"
+    }
   ],
   "observations": [
-    {"country_code": "IN", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": 1, "status": "first", "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills", "limitation": "gl=in hint; one tab; num=20"},
-    {"country_code": "US", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": 1, "status": "first", "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills", "limitation": "gl=us hint; one tab; num=20"},
-    {"country_code": "BR", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": 1, "status": "first", "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills", "limitation": "gl=br hint; UI in Portuguese; one tab; num=20"},
-    {"country_code": "CA", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": 1, "status": "first", "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills", "limitation": "gl=ca hint; one tab; num=10"},
-    {"country_code": "MX", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": 1, "status": "first", "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills", "limitation": "gl=mx hint; UI in Spanish; one tab; num=10"},
-    {"country_code": "AU", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": 1, "status": "first", "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills", "limitation": "gl=au hint; one tab; num=10"},
-    {"country_code": "SG", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": null, "status": "blocked", "result_url": null, "limitation": "Google unusual-traffic page; not retried"},
-    {"country_code": "JP", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": null, "status": "blocked", "result_url": null, "limitation": "Google unusual-traffic page; not retried"},
-    {"country_code": "GB", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": null, "status": "blocked", "result_url": null, "limitation": "Google unusual-traffic page; not retried"},
-    {"country_code": "DE", "query_id": "q1", "provider": "google-web", "observed_at": "2026-10-23", "position": null, "status": "blocked", "result_url": null, "limitation": "Google unusual-traffic page; not retried"},
-    {"country_code": "US", "query_id": "q2", "provider": "google-web", "observed_at": "2026-10-23", "position": null, "status": "absent_top9", "result_url": null, "limitation": "Top nine results checked; repository not among them. Official HackerRank pages rank first."}
+    {
+      "country_code": "IN",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": 1,
+      "status": "first",
+      "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills",
+      "limitation": "gl=in hint; one tab; num=20"
+    },
+    {
+      "country_code": "US",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": 1,
+      "status": "first",
+      "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills",
+      "limitation": "gl=us hint; one tab; num=20"
+    },
+    {
+      "country_code": "BR",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": 1,
+      "status": "first",
+      "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills",
+      "limitation": "gl=br hint; UI in Portuguese; one tab; num=20"
+    },
+    {
+      "country_code": "CA",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": 1,
+      "status": "first",
+      "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills",
+      "limitation": "gl=ca hint; one tab; num=10"
+    },
+    {
+      "country_code": "MX",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": 1,
+      "status": "first",
+      "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills",
+      "limitation": "gl=mx hint; UI in Spanish; one tab; num=10"
+    },
+    {
+      "country_code": "AU",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": 1,
+      "status": "first",
+      "result_url": "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills",
+      "limitation": "gl=au hint; one tab; num=10"
+    },
+    {
+      "country_code": "SG",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "blocked",
+      "result_url": null,
+      "limitation": "Google unusual-traffic page; not retried"
+    },
+    {
+      "country_code": "JP",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "blocked",
+      "result_url": null,
+      "limitation": "Google unusual-traffic page; not retried"
+    },
+    {
+      "country_code": "GB",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "blocked",
+      "result_url": null,
+      "limitation": "Google unusual-traffic page; not retried"
+    },
+    {
+      "country_code": "DE",
+      "query_id": "q1",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "blocked",
+      "result_url": null,
+      "limitation": "Google unusual-traffic page; not retried"
+    },
+    {
+      "country_code": "US",
+      "query_id": "q2",
+      "provider": "google-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top9",
+      "result_url": null,
+      "limitation": "Top nine results checked; repository not among them. Official HackerRank pages rank first."
+    },
+    {
+      "country_code": "IN",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top5",
+      "result_url": null,
+      "limitation": "cc=IN hint; top five checked (WhatsApp, Sterling and Wilson pages); repository not among them"
+    },
+    {
+      "country_code": "US",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top5",
+      "result_url": null,
+      "limitation": "cc=US hint; top five checked (HackerRank pages); repository not among them"
+    },
+    {
+      "country_code": "SG",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "absent_top5",
+      "result_url": null,
+      "limitation": "cc=SG hint; top five checked (unrelated stock pages); repository not among them"
+    },
+    {
+      "country_code": "GB",
+      "query_id": "q1",
+      "provider": "bing-web",
+      "observed_at": "2026-10-23",
+      "position": null,
+      "status": "anomalous",
+      "result_url": null,
+      "limitation": "cc=GB hint returned unrelated adult-content results for this query; treated as an unreliable result, not a ranking"
+    }
   ]
 }

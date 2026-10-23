@@ -26,9 +26,14 @@ This repository has **no public website**. Its only public surface is the GitHub
 4. Added the verified research pipeline, data and generated tables described in `docs/ORCHESTRATE_RESEARCH.md`.
 5. Added automated tests for the points in `docs/SEO_AEO_TEST_REPORT.md`.
 
+## Pages site prepared (not published)
+- `scripts/build_site.py` generates `site/index.html`, `site/sitemap.xml` and `site/robots.txt` from the verified data.
+- The canonical URL is `https://nitish-r-g.github.io/hackerrank-orchestrate-skills/`. It is used only if Pages is enabled. Nothing is published.
+- Deployment steps and the approval gate are in `docs/DEPLOY_GITHUB_PAGES.md`.
+
 ## Not done, and why
-- **Sitemap and robots.txt:** no website exists.
-- **JSON-LD on a web page:** GitHub renders no page we control. `CITATION.cff` is the machine-readable citation file GitHub reads.
+- **Live sitemap and robots.txt:** the files are generated in `site/`, but no live site exists until Pages is enabled.
+- **JSON-LD on a live page:** the JSON-LD is in `site/index.html` and parses, but it is not live until Pages is enabled. `CITATION.cff` is the citation file GitHub reads.
 - **Country pages:** not created. Verified data names no participant countries, so any country page would be doorway content, which the brief forbids.
 - **External directories and backlinks:** not submitted. Submitting to external sites requires your authorisation and must not use fake endorsements.
 - **Ranking claims:** none made. Search rankings are controlled by each provider. See `docs/COUNTRY_VISIBILITY.md`.

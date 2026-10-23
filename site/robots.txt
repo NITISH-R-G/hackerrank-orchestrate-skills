@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nitish-r-g.github.io/hackerrank-orchestrate-skills/sitemap.xml
