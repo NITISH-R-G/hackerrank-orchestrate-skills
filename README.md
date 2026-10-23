@@ -1,17 +1,72 @@
 # orchestrate-kit
 
+<p align="center">
+  <img src="assets/readme/hero.svg" alt="orchestrate-kit banner: Measure before you ship. Agent skills, an evaluator and an estimated scorer for the HackerRank Orchestrate hackathon" width="960">
+</p>
+
+<p align="center"><b>Measure before you ship.</b></p>
+
 [![CI](https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/NITISH-R-G/hackerrank-orchestrate-skills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](./pyproject.toml)
-[![Zero runtime deps](https://img.shields.io/badge/dependencies-0-brightgreen)](./pyproject.toml)
 
-**The definitive toolkit for HackerRank Orchestrate.** HackerRank grades
-every submission on four independent signals — Code ZIP, Output CSV, AI
-Chat Transcript, AI Judge Interview — and their own published analysis
-found no single one predicts the leaderboard: the top submissions were
-balanced across all four, not excellent at one. Every tool here targets
-one or more of those four signals directly, not generic "AI engineering
-best practice."
+<p align="center">
+  <img src="assets/readme/features.svg" alt="Four capability cards: eight agent skills, an evaluator that proves it can fail, an estimated scorer, and a submission checker" width="960">
+</p>
+
+**orchestrate-kit** is an unofficial toolkit for HackerRank Orchestrate: eight agent skills for the 24-hour challenge, an evaluator that proves its own audits can fail, and an estimated scorer for HackerRank's four published signals. It is not affiliated with HackerRank.
+
+<p align="center">
+  <img src="assets/readme/results.svg" alt="Measured results: selftest caught 10 of 10 injected defects and kept 3 of 3 benign cases quiet; audit passed 8 checks; 195 tests; published score weights 10, 30, 30 and 30 percent" width="960">
+</p>
+
+### How the pieces fit
+
+<p align="center">
+  <img src="assets/readme/architecture.svg" alt="Architecture infographic: coding agents use eight skills and the orchestrate CLI; data sources feed a rebuild step that writes research data and a Pages-ready site; skills and CLI write the submission" width="960">
+</p>
+
+<details>
+<summary>Mermaid version (supplementary)</summary>
+
+```mermaid
+flowchart LR
+    A[Coding agents] --> S[skills/ - 8 skills]
+    A --> K[orchestrate CLI]
+    S --> SUB[(submission/)]
+    K --> SUB
+    D[(data/sources + raw snapshots)] --> R[build_research_data.py] --> OUT[research JSON + visibility table]
+    R --> SITE[build_site.py -> site/]
+```
+
+</details>
+
+### Workflow: from problem statement to submission
+
+<p align="center">
+  <img src="assets/readme/workflow.svg" alt="Workflow infographic: input, orchestrate and build, evaluate, fix in a loop back to evaluate, then submission with output.csv and code.zip" width="960">
+</p>
+
+<details>
+<summary>Mermaid version (supplementary)</summary>
+
+```mermaid
+flowchart TD
+    P[Problem statement + dataset] --> B[orchestrate-build] --> T{Sample output right?}
+    T -- no --> F[orchestrate-test-fix] --> T
+    T -- yes --> SC[orchestrate-score] --> SU[orchestrate-submit] --> PK[orchestrate-package]
+    PK -- READY --> OUT[(submission/)]
+```
+
+</details>
+
+## Built with
+
+<p align="center">
+  <img src="assets/readme/tech-stack.svg" alt="Technology stack grid: Python 3.10 plus, pytest, Ruff, GitHub Actions, Pillow, Markdown, Mermaid, SVG, JSON-LD and CFF, Chrome" width="960">
+</p>
+
+<p align="center"><img src="assets/readme/divider.svg" alt="" width="960"></p>
 
 ## Verified research and visibility
 
@@ -93,15 +148,6 @@ where it landed).
 
 Zero runtime dependencies. No API key. Everything runs offline.
 
----
-
-
-<p align="center">
-  <img src="assets/readme/hero.svg" alt="orchestrate-kit banner: Measure before you ship. Agent skills, an evaluator and an estimated scorer for the HackerRank Orchestrate hackathon" width="960">
-</p>
-
-<p align="center"><b>Measure before you ship.</b> A toolkit that proves its own audits can fail, then grades your HackerRank Orchestrate submission on the four published signals.</p>
-
 ## At a glance
 
 | What | Where |
@@ -111,54 +157,7 @@ Zero runtime dependencies. No API key. Everything runs offline.
 | Submission checker that builds `submission/` | [`package_submission.py`](skills/orchestrate-package/scripts/package_submission.py) |
 | Verified research with sources and unknowns | [`docs/ORCHESTRATE_RESEARCH.md`](docs/ORCHESTRATE_RESEARCH.md) |
 | Repository tests | `python -m pytest -q` (192 tests) |
-
-<p align="center">
-  <img src="assets/readme/features.svg" alt="Four capability cards: eight agent skills, an evaluator that proves it can fail, an estimated scorer, and a submission checker" width="960">
-</p>
-
-<p align="center">
-  <img src="assets/readme/results.svg" alt="Measured results: selftest caught 10 of 10 injected defects and kept 3 of 3 benign cases quiet; audit passed 8 checks; 195 tests; published score weights 10, 30, 30 and 30 percent" width="960">
-</p>
-
-### How the pieces fit
-
-<p align="center">
-  <img src="assets/readme/architecture.svg" alt="Architecture infographic: coding agents use eight skills and the orchestrate CLI; data sources feed a rebuild step that writes research data and a Pages-ready site; skills and CLI write the submission" width="960">
-</p>
-
-<details>
-<summary>Mermaid version (supplementary)</summary>
-
-```mermaid
-flowchart LR
-    A[Coding agents] --> S[skills/ - 8 skills]
-    A --> K[orchestrate CLI]
-    S --> SUB[(submission/)]
-    K --> SUB
-    D[(data/sources + raw snapshots)] --> R[build_research_data.py] --> OUT[research JSON + visibility table]
-    R --> SITE[build_site.py -> site/]
-```
-
-</details>
-
-### Workflow: from problem statement to submission
-
-<p align="center">
-  <img src="assets/readme/workflow.svg" alt="Workflow infographic: input, orchestrate and build, evaluate, fix in a loop back to evaluate, then submission with output.csv and code.zip" width="960">
-</p>
-
-<details>
-<summary>Mermaid version (supplementary)</summary>
-
-```mermaid
-flowchart TD
-    P[Problem statement + dataset] --> B[orchestrate-build] --> T{Sample output right?}
-    T -- no --> F[orchestrate-test-fix] --> T
-    T -- yes --> SC[orchestrate-score] --> SU[orchestrate-submit] --> PK[orchestrate-package]
-    PK -- READY --> OUT[(submission/)]
-```
-
-</details>
+## Screenshots and supporting evidence
 
 <details>
 <summary><b>Real output from this repository</b> (captured by <code>scripts/build_readme_assets.py</code>)</summary>
@@ -195,14 +194,6 @@ Where a measurement is absent the tools print `UNKNOWN` and hand you the
 experiment that would resolve it.
 
 ---
-
-<p align="center"><img src="assets/readme/divider.svg" alt="" width="960"></p>
-
-## Built with
-
-<p align="center">
-  <img src="assets/readme/tech-stack.svg" alt="Technology stack grid: Python 3.10 plus, pytest, Ruff, GitHub Actions, Pillow, Markdown, Mermaid, SVG, JSON-LD and CFF, Chrome" width="960">
-</p>
 
 ## The four systems
 
