@@ -590,3 +590,35 @@ def test_blank_justification_detected_under_any_round_column(tmp_path):
         assert finding is not None, column
         assert penalty == 50.0, column
         assert column in finding.detail, column
+
+
+def test_generic_and_contradicting_justifications_are_penalised(tmp_path):
+    """Rubric: a correct action with a generic or contradicting justification is
+    capped near 70. Each weak row costs 30 points of the 100-point row scale, so
+    the file loses 30 * fraction of weak rows."""
+    from orchestrate_kit.score.output_csv import _weak_justification_finding
+    from orchestrate_kit.evaluator.plugin_api import RepoContext
+
+    def repo(rows):
+        root = tmp_path / str(abs(hash(rows)))
+        (root / "dataset").mkdir(parents=True)
+        body = "message_id,action,reason\n" + "\n".join(
+            f"{mid},{act},{reason}" for mid, act, reason in rows) + "\n"
+        (root / "dataset" / "output.csv").write_text(body, encoding="utf-8")
+        return RepoContext(root=root)
+
+    good = [("m1", "mute", "This message asks for OTP through a suspicious payment flow."),
+            ("m2", "notify", "Direct request from a known family member about the school pickup.")]
+    assert _weak_justification_finding(repo(good))[0] is None
+
+    generic = good + [("m3", "digest", "ok")]
+    finding, penalty = _weak_justification_finding(repo(generic))
+    assert finding is not None
+    assert abs(penalty - 30 * (1 / 3)) < 1e-6
+
+    contradicting = [("m4", "mute", "This should notify the user now, it is important.")]
+    finding, penalty = _weak_justification_finding(repo(contradicting))
+    assert finding is not None and penalty == 30.0
+
+    urgent_scam = [("m5", "mute", "The message asks for urgent OTP details, a clear scam.")]
+    assert _weak_justification_finding(repo(urgent_scam))[0] is None

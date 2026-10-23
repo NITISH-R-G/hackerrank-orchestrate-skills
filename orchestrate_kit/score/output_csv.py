@@ -70,6 +70,59 @@ def _justification_finding(ctx: RepoContext) -> tuple[Finding | None, float]:
         "correct action with no justification is not equivalent to one "
         "with a grounded justification"), penalty
 
+GENERIC_REASONS = {
+    "n/a", "na", "none", "ok", "okay", "unknown", "as per policy", "per policy",
+    "no reason", "see above", "-", "tbd", "todo",
+}
+MIN_WORDS = 5
+# HackerRank's writeup: a correct action with a generic or contradicting
+# justification is capped near 70. A capped row loses at least 30 of 100
+# points, so a file with a fraction f of weak rows loses at least 30 * f.
+WEAK_ROW_CAP_LOSS = 30.0
+# Phrases that argue FOR the opposite of the row's action. Deliberately
+# phrase-level: a bare word like "urgent" often describes content (a scam asks
+# for "urgent" OTP) and must not count as a contradiction.
+_CONTRADICTIONS = {
+    "mute": ("should notify", "notify the user now", "deserves immediate", "needs immediate attention"),
+    "notify": ("should be muted", "should mute", "mute this", "safe to mute"),
+}
+
+
+def _weak_justification_finding(ctx: RepoContext) -> tuple[Finding | None, float]:
+    """Rows whose justification is generic, or contradicts the row's action,
+    are capped at 70 by the rubric. Heuristic: a reason under MIN_WORDS words,
+    a placeholder phrase, or a reason that argues against its own action word
+    (only checked when an 'action' column exists). Penalty = 30 * fraction of
+    weak rows. Blank rows are handled by _justification_finding instead."""
+    text = ctx.read("dataset/output.csv")
+    if not text:
+        return None, 0.0
+    rows = list(csv.DictReader(io.StringIO(text)))
+    column = next((c for c in JUSTIFICATION_COLUMNS if rows and c in rows[0]), None)
+    if column is None:
+        return None, 0.0
+    weak = []
+    for r in rows:
+        reason = (r.get(column) or "").strip()
+        if not reason:
+            continue
+        lowered = reason.lower().strip(" .")
+        contradicts = False
+        action = (r.get("action") or "").strip().lower()
+        for word in _CONTRADICTIONS.get(action, ()):
+            if word in lowered:
+                contradicts = True
+        if len(reason.split()) < MIN_WORDS or lowered in GENERIC_REASONS or contradicts:
+            weak.append(r.get("message_id") or r.get("request_id") or r.get("user_id") or "?")
+    if not weak:
+        return None, 0.0
+    fraction = len(weak) / len(rows)
+    return Finding(
+        "generic or contradicting justification",
+        f"{len(weak)}/{len(rows)} row(s) have a justification that is too short, "
+        f"generic, or argues against its own action (e.g. {', '.join(weak[:3])}); "
+        "rubric caps these rows near 70"), WEAK_ROW_CAP_LOSS * fraction
+
 
 def score_output(repo_root: Path, python: str = "python") -> SignalScore:
     ctx = RepoContext(root=repo_root, python=python)
@@ -98,6 +151,10 @@ def score_output(repo_root: Path, python: str = "python") -> SignalScore:
     if just_finding:
         score -= just_penalty
         findings.append(just_finding)
+    weak_finding, weak_penalty = _weak_justification_finding(ctx)
+    if weak_finding:
+        score -= weak_penalty
+        findings.append(weak_finding)
 
     score = max(0.0, score)
 
