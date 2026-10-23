@@ -52,6 +52,18 @@ If any section is "not checked", show the combined number as a range (missing se
 - Output CSV gaps are usually the cheapest to close with a targeted fix. Use `orchestrate-test-fix` and measure with the change-record loop.
 - Interview gaps are the cheapest in absolute time, but they are scored on depth, so prepare concrete mechanisms, not general claims.
 
+## Calibrate against official results (when you have them)
+Only your own official section scores can validate this skill. Put them in `official_scores.json` (format in `scripts/calibrate.py`), then run from the repo root that produced those scores:
+
+```bash
+python skills/orchestrate-score/scripts/calibrate.py --repo . --official official_scores.json   --transcript log.txt --interview-result interview.json
+```
+
+It prints, per section, the estimate, the official percentage and the gap, and whether the published weights reproduce your official final. Rules:
+- Use only numbers HackerRank gave you for THIS submission. Never type in another team's numbers against your own repo: that compares two different submissions and proves nothing. (A test run that did exactly this produced a 40-point code gap; the gap came from the wrong repo, not from the scorer.)
+- A section with no official number is reported as unchecked. Do not treat it as passed.
+- Record each calibration in `references/scoring-model.md` with the date and the round.
+
 ## Rules
 - Label every number as MEASURED (you ran it), ESTIMATED (heuristic or judgement), or NOT CHECKED.
 - Do not compare your estimate with another team's score unless both used the same method.
