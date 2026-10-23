@@ -600,7 +600,7 @@ def test_generic_and_contradicting_justifications_are_penalised(tmp_path):
     from orchestrate_kit.evaluator.plugin_api import RepoContext
 
     def repo(rows):
-        root = tmp_path / str(abs(hash(rows)))
+        root = tmp_path / f"case{len(list(tmp_path.iterdir()))}"
         (root / "dataset").mkdir(parents=True)
         body = "message_id,action,reason\n" + "\n".join(
             f"{mid},{act},{reason}" for mid, act, reason in rows) + "\n"
