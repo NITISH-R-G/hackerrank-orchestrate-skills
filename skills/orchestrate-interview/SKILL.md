@@ -33,6 +33,9 @@ Structure each answer as: claim, evidence or mechanism, the alternative you reje
 ## Step 3 - Rejection story
 Prepare one measured change you tried and reverted, with the numbers that killed it. This is the single strongest answer to "what did you learn?" Source: rejection log in `orchestrate-reference/references/playbook-principles.md`.
 
+## Step 3b - Depth targets (from the July HackerRank post)
+Judge scores correlate with answer depth: total words r = 0.615, share of longer answers r = 0.631, concrete mechanisms and tradeoffs r = 0.583, very short answers r = -0.568. So every answer needs at least one mechanism, one number, and one limit, and should not be a one-liner.
+
 ## Step 4 - Rehearsal
 - Practise aloud, out loud, timed at 30 seconds per answer.
 - Answer depth matters more than turn count. Short answers scored lowest. Give one concrete example per answer, then stop.

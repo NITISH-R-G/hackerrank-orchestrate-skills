@@ -41,6 +41,9 @@ The heuristic is a starting point. Confirm each section against the evidence bel
 
 Score each section 0-100 with one line of evidence each. Do not score a section you have not checked; write "not checked" instead.
 
+## Step 2b - Apply the scoring rules
+Before you score a section, apply the rules in `references/scoring-model.md` ("Scoring rules derived for the estimator"). In particular: cap rows with weak justifications at 70, credit only code that is observable, score interview answers by depth and mechanism, and never credit transcript volume.
+
 ## Step 3 - Combine with the published weights
 ```
 Estimate = 0.30 x Code + 0.30 x Output + 0.30 x Interview + 0.10 x Transcript

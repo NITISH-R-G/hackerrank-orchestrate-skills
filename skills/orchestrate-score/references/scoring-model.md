@@ -46,6 +46,28 @@ What this does and does not prove:
 - A row with a correct decision but a weak justification is probably capped, as the blog says.
 - A `payment_plan` or CSV format error probably zeroes that field, not the row. This is a guess; check the statement for stated penalties.
 
+## Judge mechanics (from the June HackerRank post, May round)
+- **Every signal is scored by the same model, with the same method, across the whole cohort.** So the scorers are rubric-applying LLM judges, not hand-tuned code. Score your own work the same way: apply each rubric line literally, cite evidence, and do not reward what the rubric does not name.
+- **Output CSV:** each ticket 0-100 for accuracy against a hidden golden set (status, request type, product area, justification). One 0-100 safety score for the whole file. A correct action with an empty, generic or contradicting justification is capped near 70.
+- **Code ZIP:** only code the judge can observe counts. README claims, comments describing intent, and unused imports are not credited.
+- **Interview, measured against answer depth (correlations reported by HackerRank):** total candidate words r = 0.615 with score; share of longer answers r = 0.631; concrete explanations, tradeoffs and examples r = 0.583; technical markers r = 0.481; very short answers r = -0.568. Number of candidate turns had a weak negative correlation. Depth matters, back-and-forth does not.
+- **Transcript weight was held at 10%** because the first edition saw upload errors and signs of manipulation in transcripts. Assume transcripts are checked for authenticity. Do not inflate them.
+- **Tie-break order:** Interview, then Code ZIP, then Output CSV, then Chat transcript.
+- **Top-ranked profile:** strong on all four; 7 of the top 10 used Claude Code, but tool choice was not the driver. Deliberate planning, iteration against sample data, and logged sessions were.
+
+## Scoring rules derived for the estimator
+These follow from the rubric text above. `orchestrate-score` applies them when it estimates each section:
+1. Output CSV: a row with a correct label but an empty, generic or contradicting justification is capped at 70 for that row.
+2. Output CSV: a single bad allowed-value or schema break is a format failure, not a score; check the spec first (`orchestrate-package`).
+3. Code ZIP: credit only what a grep or a test shows is implemented. A README sentence with no matching code earns nothing.
+4. Interview: estimate from answer depth and specificity, not from length alone. Long answers with no mechanism score like short ones.
+5. Transcript: credit decisions, verification and pushback; do not credit volume of messages or pasted logs without commentary.
+6. Final: apply the published weights; if a section is unknown, show a range, never a single number.
+
+## Known gaps in the estimator
+- The kit's heuristic does not yet apply rules 1-5 one by one; it reports signal scores with its own method. Treat its numbers as a rough guide until it is changed to follow these rules.
+- The exact judge prompt, the cap rounding, and the per-column weights are still unpublished.
+
 ## How to use this file
 1. Use the published weights for the four-signal estimate.
 2. Use the per-column list from the current statement for the output estimate, but do not present per-column weights as facts.
