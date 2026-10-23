@@ -275,3 +275,28 @@ def test_deployment_doc_states_nothing_is_published():
     doc = (ROOT / "docs" / "DEPLOY_GITHUB_PAGES.md").read_text(encoding="utf-8")
     assert "not deployed" in doc.lower()
     assert "approval" in doc.lower()
+
+
+# --- README visual checks ---
+def test_readme_image_paths_exist_and_have_alt_text():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    imgs = re.findall(r'<img [^>]*src="([^"]+)"[^>]*>', readme)
+    assert len(imgs) >= 3, imgs
+    for tag in re.findall(r"<img [^>]*>", readme):
+        assert re.search(r'alt="[^"]{10,}"', tag), tag
+    for src in imgs:
+        assert (ROOT / src).exists(), src
+
+
+def test_readme_details_blocks_are_balanced_and_diagrams_present():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert readme.count("<details>") == readme.count("</details>") >= 2
+    assert readme.count("```mermaid") >= 2
+
+
+def test_readme_markdown_links_resolve():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    for target in re.findall(r"\]\(([^)#\s]+)\)", readme):
+        if target.startswith(("http://", "https://", "mailto:")):
+            continue
+        assert (ROOT / target).exists(), target

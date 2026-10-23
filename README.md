@@ -95,6 +95,82 @@ Zero runtime dependencies. No API key. Everything runs offline.
 
 ---
 
+
+<p align="center">
+  <img src="docs/assets/readme/orchestrate-selftest.png" alt="Terminal output of orchestrate selftest: a clean baseline, then each injected defect caught by the evaluator" width="820">
+</p>
+
+<p align="center"><b>Measure before you ship.</b> A toolkit that proves its own audits can fail, then grades your HackerRank Orchestrate submission on the four published signals.</p>
+
+## At a glance
+
+| What | Where |
+|---|---|
+| Eight agent skills for the 24-hour challenge | [`skills/`](skills/INDEX.md) |
+| Evaluator, scorer, transcript linter, interview simulator | `orchestrate` CLI (below) |
+| Submission checker that builds `submission/` | [`package_submission.py`](skills/orchestrate-package/scripts/package_submission.py) |
+| Verified research with sources and unknowns | [`docs/ORCHESTRATE_RESEARCH.md`](docs/ORCHESTRATE_RESEARCH.md) |
+| Repository tests | `python -m pytest -q` (192 tests) |
+
+### How the pieces fit
+
+```mermaid
+flowchart LR
+    subgraph Agents["Any coding agent"]
+        A1[Claude Code] --- A2[Codex / Cursor / Copilot]
+    end
+    subgraph Skills["skills/ (8 skills)"]
+        S1[orchestrate] --> S2[build]
+        S2 --> S3[test-fix] --> S4[submit]
+        S5[interview] -.parallel.- S2
+    end
+    subgraph Kit["orchestrate CLI"]
+        K1[evaluate / selftest]
+        K2[score]
+        K3[transcript]
+        K4[memory / mentor]
+    end
+    subgraph Data["data/ and docs/"]
+        D1[(sources + raw snapshots)] --> D2[build_research_data.py]
+        D2 --> D3[research JSON + visibility table]
+        D2 --> D4[build_site.py] --> D5[site/ Pages-ready]
+    end
+    Agents --> Skills
+    Skills --> Kit
+    Kit --> Submission[(submission/)]
+    Skills --> Submission
+```
+
+### Workflow: from problem statement to submission
+
+```mermaid
+flowchart TD
+    P[Problem statement + dataset] --> B[orchestrate-build<br/>DESIGN.md, then run_pipeline.py]
+    B --> T{Sample output right?}
+    T -- no --> F[orchestrate-test-fix<br/>classify, change one thing, diff whole output]
+    F --> T
+    T -- yes --> SC[orchestrate-score<br/>estimate the four signals]
+    SC --> SU[orchestrate-submit<br/>self-check, security, release gate]
+    SU --> PK[orchestrate-package<br/>package_submission.py]
+    PK -- FAIL --> F
+    PK -- READY --> OUT[(submission/: output.csv, code.zip,<br/>README, transcript)]
+```
+
+<details>
+<summary><b>Real output from this repository</b> (captured by <code>scripts/build_readme_assets.py</code>)</summary>
+
+<p align="center">
+  <img src="docs/assets/readme/orchestrate-score-audit.png" alt="Terminal output of orchestrate score --audit ending with OVERALL: TRUSTWORTHY" width="820">
+</p>
+<p align="center">
+  <img src="docs/assets/readme/research-data-check.png" alt="Terminal output of build_research_data.py --check reporting all generated outputs are up to date" width="820">
+</p>
+<p align="center">
+  <img src="docs/assets/readme/site-landing.png" alt="Screenshot of the generated unofficial landing page with verified facts and visibility-test counts" width="620">
+</p>
+
+</details>
+
 ## Why this exists
 
 Most engineering tooling answers *"did the tests pass?"*
@@ -117,6 +193,10 @@ experiment that would resolve it.
 ---
 
 ## The four systems
+
+<details>
+<summary>Show the four systems in detail</summary>
+
 
 ### 1. Engineering Memory — `orchestrate memory`
 
@@ -295,6 +375,8 @@ The decision graph renders **rejected branches as first-class nodes** beside
 the chosen one — precisely what `git log` cannot show.
 
 ---
+
+</details>
 
 ## Install
 
