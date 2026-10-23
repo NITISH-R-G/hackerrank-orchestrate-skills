@@ -1,0 +1,235 @@
+{
+  "generated_by": "scripts/build_research_data.py",
+  "schema_version": 1,
+  "editions": {
+    "editions": [
+      {
+        "id": "orchestrate-2026-05",
+        "name": "HackerRank Orchestrate, May 2026 (first edition)",
+        "date_confirmed": "May 1, 2026 start (HackerRank blog, June 8, 2026)",
+        "problem": "Multi-domain support triage",
+        "source_ids": [
+          "github-problem-may26",
+          "hackerrank-blog-behind-the-scenes-2026-06-08"
+        ],
+        "registrations": 12885,
+        "registration_countries": 48,
+        "leaderboard_public": false,
+        "leaderboard_note": "Not checked. Contest page is login-gated."
+      },
+      {
+        "id": "orchestrate-2026-06",
+        "name": "HackerRank Orchestrate, June 2026",
+        "date_confirmed": "not confirmed by a public source",
+        "problem": "Multi-modal evidence review (damage claims)",
+        "source_ids": [
+          "github-problem-june26"
+        ],
+        "leaderboard_public": false,
+        "leaderboard_note": "Not checked. Contest page is login-gated."
+      },
+      {
+        "id": "orchestrate-2026-08",
+        "name": "HackerRank Orchestrate, August 2026",
+        "date_confirmed": "not confirmed by a public source",
+        "problem": "Message notification router (WhatsApp-style)",
+        "source_ids": [
+          "github-problem-august26"
+        ],
+        "leaderboard_public": false,
+        "leaderboard_note": "Not checked. Contest page is login-gated."
+      },
+      {
+        "id": "orchestrate-2026-09",
+        "name": "HackerRank Orchestrate, September 2026",
+        "date_confirmed": "September 2026 (repository README); exact dates not confirmed",
+        "problem": "Buy or Wait (financial affordability)",
+        "source_ids": [
+          "github-problem-september26",
+          "hackerrank-leaderboard-september26-buy-or-wait"
+        ],
+        "leaderboard_public": true,
+        "leaderboard_note": "Page 1 only (30 of 3,062 entries). Snapshot in data/raw."
+      }
+    ],
+    "rounds_with_public_grader_code": [],
+    "notes": [
+      "The June 8 blog says the second edition would be on June 19. That is a blog statement, not confirmation that it happened. The June problem repository's name suggests the June 2026 round, not a June 19 date.",
+      "No public grader code exists. code/evaluation in the September repository is empty."
+    ]
+  },
+  "sources": [
+    {
+      "id": "github-problem-may26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-may26",
+      "title": "HackerRank Orchestrate May 2026 starter repository (problem statement, criteria, sample data)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": [
+        "problem_statement.md",
+        "evalutation_criteria.md",
+        "sample support tickets"
+      ]
+    },
+    {
+      "id": "github-problem-june26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-june26",
+      "title": "HackerRank Orchestrate June 2026 starter repository (claims review)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": [
+        "problem_statement.md",
+        "dataset/sample_claims.csv"
+      ]
+    },
+    {
+      "id": "github-problem-august26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-august26",
+      "title": "HackerRank Orchestrate August 2026 starter repository (message router)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": [
+        "problem_statement.md",
+        "dataset/sample_messages.csv"
+      ]
+    },
+    {
+      "id": "github-problem-september26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-september26",
+      "title": "HackerRank Orchestrate September 2026 starter repository (Buy or Wait)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": [
+        "problem_statement.md",
+        "dataset/sample_requests.csv",
+        "code/evaluation (empty)"
+      ]
+    },
+    {
+      "id": "hackerrank-blog-behind-the-scenes-2026-06-08",
+      "url": "https://www.hackerrank.com/blog/behind-the-scenes-of-hackerrank-orchestrate/",
+      "title": "Behind the Scenes of HackerRank Orchestrate (Vivek Ravisankar, June 8, 2026)",
+      "publisher": "HackerRank",
+      "access": "public",
+      "contains": [
+        "first edition May 1",
+        "12,885 registrations from 48 countries",
+        "scoring weights",
+        "Spearman correlations"
+      ]
+    },
+    {
+      "id": "hackerrank-blog-getting-better-2026-07-24",
+      "url": "https://www.hackerrank.com/blog/getting-better-at-orchestrate/",
+      "title": "Getting better at Orchestrate (Shloka Shah, July 24, 2026)",
+      "publisher": "HackerRank",
+      "access": "public",
+      "contains": [
+        "four signals",
+        "interview depth correlations",
+        "transcript authenticity note"
+      ]
+    },
+    {
+      "id": "hackerrank-leaderboard-september26-buy-or-wait",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-september26/challenges/buy-or-wait/leaderboard",
+      "title": "Buy or Wait leaderboard, HackerRank Orchestrate September 2026",
+      "publisher": "HackerRank",
+      "access": "public, page 1 only (30 of 3,062 entries, 103 pages)",
+      "contains": [
+        "section points per participant",
+        "final score"
+      ],
+      "limitations": [
+        "no country column",
+        "page banner shows 0.0 for the top three while the table shows real scores"
+      ]
+    },
+    {
+      "id": "hackerrank-contest-may26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-may26",
+      "title": "HackerRank Orchestrate May 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    },
+    {
+      "id": "hackerrank-contest-june26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-june26",
+      "title": "HackerRank Orchestrate June 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    },
+    {
+      "id": "hackerrank-contest-august26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-august26",
+      "title": "HackerRank Orchestrate August 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    },
+    {
+      "id": "hackerrank-contest-october26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-october26",
+      "title": "HackerRank Orchestrate October 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    }
+  ],
+  "leaderboard_snapshots": {
+    "leaderboard-september26-buy-or-wait-page1.csv": {
+      "path": "data/raw/leaderboard-september26-buy-or-wait-page1.csv",
+      "rows": 30,
+      "sections": {
+        "chat_10": {
+          "min": 4.9,
+          "max": 10.0,
+          "mean": 9.09,
+          "sd": 1.03,
+          "section_max": 10
+        },
+        "interview_30": {
+          "min": 22.8,
+          "max": 27.6,
+          "mean": 25.4,
+          "sd": 1.25,
+          "section_max": 30
+        },
+        "output_csv_30": {
+          "min": 12.6,
+          "max": 21.9,
+          "mean": 16.4,
+          "sd": 2.27,
+          "section_max": 30
+        },
+        "code_zip_30": {
+          "min": 16.8,
+          "max": 27.9,
+          "mean": 24.19,
+          "sd": 2.44,
+          "section_max": 30
+        }
+      },
+      "final": {
+        "min": 72.7,
+        "max": 80.0,
+        "sum_check_all_rows": true
+      }
+    }
+  },
+  "country_coverage": {
+    "publicly_named_countries": [],
+    "aggregate_claims": [
+      {
+        "claim": "12,885 people registered for the first Orchestrate edition (May 1) from 48 countries",
+        "source_id": "hackerrank-blog-behind-the-scenes-2026-06-08",
+        "type": "aggregate_count"
+      }
+    ],
+    "note": "No public page names the countries of participants. Leaderboard pages do not show country. Contest pages are login-gated."
+  },
+  "rejected_records": [],
+  "failures": []
+}

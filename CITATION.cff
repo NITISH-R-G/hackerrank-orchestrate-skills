@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use these HackerRank Orchestrate skills or the verified data, please cite this repository."
+title: "HackerRank Orchestrate skills (unofficial community toolkit)"
+type: software
+abstract: "Eight agent skills, a submission checker and an estimated scorer for the HackerRank Orchestrate AI agent hackathon, with verified research data. Not affiliated with HackerRank."
+repository-code: "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills"
+url: "https://github.com/NITISH-R-G/hackerrank-orchestrate-skills"
+license: MIT
+date-released: "2026-10-23"
+keywords:
+  - HackerRank Orchestrate
+  - AI agents
+  - agent skills
+  - evaluation
+  - hackathon
+authors:
+  - name: "NITISH-R-G"

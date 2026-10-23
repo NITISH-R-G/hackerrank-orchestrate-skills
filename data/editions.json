@@ -1,0 +1,47 @@
+{
+  "editions": [
+    {
+      "id": "orchestrate-2026-05",
+      "name": "HackerRank Orchestrate, May 2026 (first edition)",
+      "date_confirmed": "May 1, 2026 start (HackerRank blog, June 8, 2026)",
+      "problem": "Multi-domain support triage",
+      "source_ids": ["github-problem-may26", "hackerrank-blog-behind-the-scenes-2026-06-08"],
+      "registrations": 12885,
+      "registration_countries": 48,
+      "leaderboard_public": false,
+      "leaderboard_note": "Not checked. Contest page is login-gated."
+    },
+    {
+      "id": "orchestrate-2026-06",
+      "name": "HackerRank Orchestrate, June 2026",
+      "date_confirmed": "not confirmed by a public source",
+      "problem": "Multi-modal evidence review (damage claims)",
+      "source_ids": ["github-problem-june26"],
+      "leaderboard_public": false,
+      "leaderboard_note": "Not checked. Contest page is login-gated."
+    },
+    {
+      "id": "orchestrate-2026-08",
+      "name": "HackerRank Orchestrate, August 2026",
+      "date_confirmed": "not confirmed by a public source",
+      "problem": "Message notification router (WhatsApp-style)",
+      "source_ids": ["github-problem-august26"],
+      "leaderboard_public": false,
+      "leaderboard_note": "Not checked. Contest page is login-gated."
+    },
+    {
+      "id": "orchestrate-2026-09",
+      "name": "HackerRank Orchestrate, September 2026",
+      "date_confirmed": "September 2026 (repository README); exact dates not confirmed",
+      "problem": "Buy or Wait (financial affordability)",
+      "source_ids": ["github-problem-september26", "hackerrank-leaderboard-september26-buy-or-wait"],
+      "leaderboard_public": true,
+      "leaderboard_note": "Page 1 only (30 of 3,062 entries). Snapshot in data/raw."
+    }
+  ],
+  "rounds_with_public_grader_code": [],
+  "notes": [
+    "The June 8 blog says the second edition would be on June 19. That is a blog statement, not confirmation that it happened. The June problem repository's name suggests the June 2026 round, not a June 19 date.",
+    "No public grader code exists. code/evaluation in the September repository is empty."
+  ]
+}

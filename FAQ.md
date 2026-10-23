@@ -7,7 +7,7 @@ No. This is an independent, community-built project based on publicly published 
 No, and be skeptical of anything that claims otherwise. HackerRank's own published finding is that "no single metric reproduces the leaderboard" — balance across all four scored signals (code, output, transcript, interview) mattered more than excellence in one. The mentor, the evaluator, and the skills are built to help with that balance; none of it is a guarantee, and `orchestrate_kit` will tell you `UNKNOWN` rather than invent one.
 
 **How do I know which advice here is a direct HackerRank quote versus a guess?**
-Every skill's `SKILL.md` opens with a "Direct evidence" line naming its source. [RESEARCH.md](./RESEARCH.md) and [SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md) explicitly tag every claim `[evidence]` or `[inference]`. Inside `orchestrate_kit`, every `Finding` carries a `Confidence` label (`measured` / `observed` / `inferred` / `unknown`) for the same reason.
+Every skill's `SKILL.md` opens with a "Direct evidence" line naming its source. [RESEARCH.md](./docs/history/RESEARCH.md) and [SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md) explicitly tag every claim `[evidence]` or `[inference]`. Inside `orchestrate_kit`, every `Finding` carries a `Confidence` label (`measured` / `observed` / `inferred` / `unknown`) for the same reason.
 
 **Do these skills only work for the May/June 2026 challenges?**
 The six `orchestrate-*` skills in `skills/` cover the whole challenge; `skills/INDEX.md` says which one to run when. The kit's audits and plugins detect by dataset *shape* (`dataset/messages.csv` + `problem_statement.md`), not by season, so they apply to any future event with that shape.

@@ -1,0 +1,94 @@
+{
+  "retrieved_on": "2026-10-23",
+  "sources": [
+    {
+      "id": "github-problem-may26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-may26",
+      "title": "HackerRank Orchestrate May 2026 starter repository (problem statement, criteria, sample data)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": ["problem_statement.md", "evalutation_criteria.md", "sample support tickets"]
+    },
+    {
+      "id": "github-problem-june26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-june26",
+      "title": "HackerRank Orchestrate June 2026 starter repository (claims review)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": ["problem_statement.md", "dataset/sample_claims.csv"]
+    },
+    {
+      "id": "github-problem-august26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-august26",
+      "title": "HackerRank Orchestrate August 2026 starter repository (message router)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": ["problem_statement.md", "dataset/sample_messages.csv"]
+    },
+    {
+      "id": "github-problem-september26",
+      "url": "https://github.com/interviewstreet/hackerrank-orchestrate-september26",
+      "title": "HackerRank Orchestrate September 2026 starter repository (Buy or Wait)",
+      "publisher": "HackerRank (interviewstreet GitHub organisation)",
+      "access": "public",
+      "contains": ["problem_statement.md", "dataset/sample_requests.csv", "code/evaluation (empty)"]
+    },
+    {
+      "id": "hackerrank-blog-behind-the-scenes-2026-06-08",
+      "url": "https://www.hackerrank.com/blog/behind-the-scenes-of-hackerrank-orchestrate/",
+      "title": "Behind the Scenes of HackerRank Orchestrate (Vivek Ravisankar, June 8, 2026)",
+      "publisher": "HackerRank",
+      "access": "public",
+      "contains": ["first edition May 1", "12,885 registrations from 48 countries", "scoring weights", "Spearman correlations"]
+    },
+    {
+      "id": "hackerrank-blog-getting-better-2026-07-24",
+      "url": "https://www.hackerrank.com/blog/getting-better-at-orchestrate/",
+      "title": "Getting better at Orchestrate (Shloka Shah, July 24, 2026)",
+      "publisher": "HackerRank",
+      "access": "public",
+      "contains": ["four signals", "interview depth correlations", "transcript authenticity note"]
+    },
+    {
+      "id": "hackerrank-leaderboard-september26-buy-or-wait",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-september26/challenges/buy-or-wait/leaderboard",
+      "title": "Buy or Wait leaderboard, HackerRank Orchestrate September 2026",
+      "publisher": "HackerRank",
+      "access": "public, page 1 only (30 of 3,062 entries, 103 pages)",
+      "contains": ["section points per participant", "final score"],
+      "limitations": ["no country column", "page banner shows 0.0 for the top three while the table shows real scores"]
+    },
+    {
+      "id": "hackerrank-contest-may26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-may26",
+      "title": "HackerRank Orchestrate May 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    },
+    {
+      "id": "hackerrank-contest-june26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-june26",
+      "title": "HackerRank Orchestrate June 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    },
+    {
+      "id": "hackerrank-contest-august26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-august26",
+      "title": "HackerRank Orchestrate August 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    },
+    {
+      "id": "hackerrank-contest-october26",
+      "url": "https://www.hackerrank.com/contests/hackerrank-orchestrate-october26",
+      "title": "HackerRank Orchestrate October 2026 contest page",
+      "publisher": "HackerRank",
+      "access": "login required (checked 2026-10-23)",
+      "contains": []
+    }
+  ]
+}

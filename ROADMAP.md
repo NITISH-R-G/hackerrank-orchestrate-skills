@@ -4,7 +4,7 @@ Ranked by expected impact, not by ease. Updated as items land — see
 [CHANGELOG.md](./CHANGELOG.md) for what's already shipped.
 
 For the memory-system-specific items below, see
-[ARCHITECTURE_EVOLUTION.md](./ARCHITECTURE_EVOLUTION.md) for the measured
+[ARCHITECTURE_EVOLUTION.md](./docs/history/ARCHITECTURE_EVOLUTION.md) for the measured
 trigger condition each one activates on — "not now" there always comes
 with the specific threshold that would make it "now."
 

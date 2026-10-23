@@ -13,6 +13,12 @@ balanced across all four, not excellent at one. Every tool here targets
 one or more of those four signals directly, not generic "AI engineering
 best practice."
 
+## Verified research and visibility
+
+- [Research summary with sources and unknowns](docs/ORCHESTRATE_RESEARCH.md)
+- [Country visibility tests and their limitations](docs/COUNTRY_VISIBILITY.md)
+- [Machine-readable summary for AI assistants](llms.txt)
+
 ## FAQ: HackerRank Orchestrate
 
 > **Unofficial.** This is a community project. It is not made by or affiliated with HackerRank. The official challenge pages are at [hackerrank.com](https://www.hackerrank.com/).
@@ -66,7 +72,7 @@ Order: `orchestrate` -> `orchestrate-build` -> `orchestrate-test-fix` -> `orches
 | `orchestrate interview` — an adaptive judge simulator with cross-examination and contradiction-catching session memory | AI Judge Interview |
 | `orchestrate evaluate` — black-box repo auditor: spec conformance, evidence quality, dataset-coupling, determinism | Code ZIP + Output CSV |
 | `orchestrate memory` — every measured rejection from a real, completed submission, queryable so you don't re-build what already lost | All four — it's the corpus behind the other three |
-| 34 [Agent Skills](https://agentskills.io) | Auto-triggering guidance across the whole build, sourced from HackerRank's own published material |
+| 8 [Agent Skills](https://agentskills.io) | Auto-triggering guidance across the whole build, sourced from HackerRank's own published material |
 
 Nothing here claims to be general AI-engineering infrastructure. It
 targets one leaderboard.
@@ -401,12 +407,12 @@ question. Fixed with tokenized matching; the test is
 |---|---|
 | **[PLAYBOOK.md](./PLAYBOOK.md)** | 20 rules for building AI systems whose correctness you can prove |
 | **[TIMELINE.md](./TIMELINE.md)** | A real F-1…F-48 defect history — including three audits that were themselves wrong |
-| **[JUDGE-PREP.md](./JUDGE-PREP.md)** | Topics an AI judge actually probed, verbatim feedback, and 10 claims never to make |
+| **[JUDGE-PREP.md](docs/history/JUDGE-PREP-first-person-notes.md)** | Topics an AI judge actually probed, verbatim feedback, and 10 claims never to make |
 | **[RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md)** | Final gate, ordered so the cheapest checks catch the worst defects |
-| **[RESEARCH.md](./RESEARCH.md)** | Sourcing for every claim, tagged `[evidence]` or `[inference]` |
+| **[RESEARCH.md](docs/history/RESEARCH.md)** | Sourcing for every claim, tagged `[evidence]` or `[inference]` |
 | **[SCORING-HEURISTIC.md](./SCORING-HEURISTIC.md)** · **[FAQ.md](./FAQ.md)** | Self-scoring rubric · common questions |
 | **[docs/adr/](./docs/adr/)** | 6 Architecture Decision Records for the biggest engineering calls (deterministic routing, constrained arbitration, Engineering Memory, negative controls, plugin architecture, and a comparative review against TencentDB Agent Memory) — each cross-referenced to the `orchestrate memory recall` entry with the actual measurement behind it |
-| **[ARCHITECTURE_EVOLUTION.md](./ARCHITECTURE_EVOLUTION.md)** | How the memory system's architecture should change across 4 growth stages (solo → small OSS → large community → multi-org), with numeric triggers (entry count, maintainer count, plugin count) for each transition |
+| **[ARCHITECTURE_EVOLUTION.md](docs/history/ARCHITECTURE_EVOLUTION.md)** | How the memory system's architecture should change across 4 growth stages (solo → small OSS → large community → multi-org), with numeric triggers (entry count, maintainer count, plugin count) for each transition |
 
 Governance for a single-maintainer project with no external contributors
 yet is folded into [CONTRIBUTING.md](./CONTRIBUTING.md#what-must-never-change)
@@ -436,50 +442,20 @@ and each produced a clean, confirming result.
 
 ---
 
-## The 34 Agent Skills
+## The 8 Agent Skills
 
-Drop-in skills for Claude Code, Cursor, Codex, Cline, Gemini CLI, and anything
-else that reads `SKILL.md`. They trigger automatically from their description —
-no slash commands.
+Drop-in skills for Claude Code, Codex, Cursor, Copilot and any agent that reads `AGENTS.md`. Start with [`skills/INDEX.md`](skills/INDEX.md).
 
-```bash
-cp -r skills/* your-project/.claude/skills/
-```
-
-**Audit tier** — from building and auditing a complete submission to
-destruction:
-
-| Skill | Answers |
+| Skill | Use it when |
 |---|---|
-| [`spec-auditor`](./skills/orchestrate-spec-auditor) | Does it match the spec *literally*? |
-| [`submission-validator`](./skills/orchestrate-submission-validator) | Are all artifacts current and consistent? |
-| [`multimodal-auditor`](./skills/orchestrate-multimodal-auditor) | Does media actually change a decision? |
-| [`dataset-coupling-auditor`](./skills/orchestrate-dataset-coupling-auditor) | Will it survive data I have not seen? |
-| [`determinism-auditor`](./skills/orchestrate-determinism-auditor) | Is it reproducible, and where does that stop? |
-| [`security-auditor`](./skills/orchestrate-security-auditor) | Does every hostile input yield a valid row? |
-| [`confidence-calibrator`](./skills/orchestrate-confidence-calibrator) | Am I calibrating to the labels or to a textbook? |
-| [`evidence-retrieval-expert`](./skills/orchestrate-evidence-retrieval-expert) | Is a retrieval gain even possible? |
-| [`rule-engine-architect`](./skills/orchestrate-rule-engine-architect) | Rules or an LLM — and is any rule dead? |
-| [`interview-coach`](./skills/orchestrate-interview-coach) | Do I own every number in my code? |
-| [`release-engineer`](./skills/orchestrate-release-engineer) | Does it work on someone else's machine? |
-| [`mentor`](./skills/orchestrate-mentor) · [`evaluator`](./skills/orchestrate-evaluator) | Should I make this change? Am I improving? |
-
-**Core flow** — `phase-gates` · `agent-architecture` · `robustness` ·
-`justification-quality` · `ai-collaboration-transcript` · `self-scoring` ·
-`interview-readiness` · `submission-review`
-
-**Tactical** — `schema-guardrails` · `failure-handling` · `naming-and-structure`
-· `secrets-and-determinism` · `edge-case-testing` · `prompt-engineering` ·
-`multi-strategy-evaluation` · `cost-and-ops-metrics` ·
-`multimodal-evidence-grounding` · `escalation-design`
-
-**Design & resilience** — `input-tracing` ·
-`input-validation-and-overrides` · `checkpoint-resilience`
-
-Every skill states its evidence tier. Nothing here claims access to
-HackerRank's internal scoring.
-
----
+| [`orchestrate`](skills/orchestrate/SKILL.md) | Start of the challenge, and whenever a step fails |
+| [`orchestrate-build`](skills/orchestrate-build/SKILL.md) | Design (DESIGN.md) and build the agent |
+| [`orchestrate-test-fix`](skills/orchestrate-test-fix/SKILL.md) | Find and fix wrong output rows |
+| [`orchestrate-submit`](skills/orchestrate-submit/SKILL.md) | Self-score, harden, and check the release gate |
+| [`orchestrate-interview`](skills/orchestrate-interview/SKILL.md) | Prepare for the AI judge interview |
+| [`orchestrate-reference`](skills/orchestrate-reference/SKILL.md) | Ready-made prompts, principles and checklists |
+| [`orchestrate-package`](skills/orchestrate-package/SKILL.md) | Check submission readiness and build `submission/` |
+| [`orchestrate-score`](skills/orchestrate-score/SKILL.md) | Estimate the score with the published weights |
 
 ## For HackerRank Orchestrate specifically
 
@@ -531,7 +507,7 @@ your real HackerRank score**: no ground-truth graded transcript exists to
 calibrate against. Verified to actually discriminate — a weak sample
 transcript scores 0.0, a strong one scores 81.8, on the real rubric
 weights, not asserted. See
-[`skills/orchestrate-transcript-engineering`](./skills/orchestrate-transcript-engineering).
+[`skills/orchestrate/references/transcript-engineering.md`](./skills/orchestrate/references/transcript-engineering.md).
 
 ## GitHub Action
 
