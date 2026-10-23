@@ -10,6 +10,8 @@ Works in any AI agent. Read the table, pick the row that matches where you are, 
 | Rows are wrong or weakly justified | `orchestrate-test-fix/SKILL.md` (Part B) |
 | Output is stable, need scores, security, packaging | `orchestrate-submit/SKILL.md` |
 | Preparing for the AI judge interview | `orchestrate-interview/SKILL.md` |
+| Output is final, want the submission folder and a readiness check | `orchestrate-package/SKILL.md` |
+| Want an estimated score, or the weakest section | `orchestrate-score/SKILL.md` |
 | Need a ready-to-paste prompt, principle, or checklist | `orchestrate-reference/SKILL.md` |
 
 ## Order

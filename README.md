@@ -15,7 +15,7 @@ best practice."
 
 ## Orchestrate skills (start here)
 
-Six Claude Code skills in `skills/`. Install by copying each folder into `~/.claude/skills/`.
+Eight Claude Code skills in `skills/`. Install by copying each folder into `~/.claude/skills/`.
 
 | Skill | Run it when |
 |---|---|
@@ -24,6 +24,8 @@ Six Claude Code skills in `skills/`. Install by copying each folder into `~/.cla
 | `orchestrate-test-fix` | Pipeline runs on sample; find and fix wrong rows |
 | `orchestrate-submit` | Output is stable; self-score, harden, spec audit, package |
 | `orchestrate-interview` | From mid-build; constants sheet, nine judge topics, rehearsal |
+| `orchestrate-package` | Output is final. Readiness check against the statement, then build `submission/` |
+| `orchestrate-score` | Estimated score with the published weights; pick the next fix |
 | `orchestrate-reference` | Any time you need a prompt, a principle, or a checklist |
 
 Order: `orchestrate` -> `orchestrate-build` -> `orchestrate-test-fix` -> `orchestrate-submit`, with `orchestrate-interview` running in parallel from mid-build.

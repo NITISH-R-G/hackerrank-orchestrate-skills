@@ -18,6 +18,8 @@ Balance wins. Past winners were strong in all four. A huge score in one section 
 | `orchestrate-test-fix` | Pipeline runs on sample | Wrong rows are classified and fixed, output is stable |
 | `orchestrate-submit` | Output is stable | Self-score done, hardening done, packaging checked |
 | `orchestrate-interview` | Output is stable (start prep earlier) | You can defend every number and decision |
+| `orchestrate-package` | Output is final. Check submission readiness against the statement and build `submission/` | — |
+| `orchestrate-score` | Before submit, or to pick the next fix. Estimated score with published weights | — |
 | `orchestrate-reference` | You need a ready-to-paste prompt, a principle, a checklist, or past-winner patterns | Never. Read on demand |
 
 Order: this -> build -> test-fix -> submit (with interview prep running in parallel from hour 14) -> final freeze.

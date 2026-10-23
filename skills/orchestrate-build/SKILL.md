@@ -44,4 +44,5 @@ Build done when:
 `orchestrate-test-fix`.
 
 ## Templates and notes
+- `references/past-problems.md` - what the four past rounds (May, June, August, September 2026) required, procedures for each, and the evidence checks run against them
 - `references/DESIGN-template.md` - the design template
