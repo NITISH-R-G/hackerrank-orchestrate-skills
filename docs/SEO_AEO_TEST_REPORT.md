@@ -28,7 +28,7 @@ Notes on these numbers:
 
 Command: `python -m pytest -q`
 
-Result: all  tests in the suite pass, of which  are the new checks in `tests/test_seo_research.py`. Zero failures. Each of the ten mandatory checks maps to a test:
+Result: all 186 tests in the suite pass, of which 24 are the new checks in `tests/test_seo_research.py`. Zero failures. Each of the ten mandatory checks maps to a test:
 
 | # | Check | Test or evidence | Result |
 |---|---|---|---|
