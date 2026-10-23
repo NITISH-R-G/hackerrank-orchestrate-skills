@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 36" role="img" aria-label="section divider">
+  <title>Section divider</title>
+  <rect width="1200" height="36" fill="#07100B"/>
+  <path d="M0 18 H520" stroke="#1F3A29" stroke-width="2"/>
+  <path d="M680 18 H1200" stroke="#1F3A29" stroke-width="2"/>
+  <circle cx="600" cy="18" r="7" fill="#00EA64"/>
+  <circle cx="570" cy="18" r="3" fill="#00EA64" fill-opacity="0.6"/>
+  <circle cx="630" cy="18" r="3" fill="#00EA64" fill-opacity="0.6"/>
+</svg>

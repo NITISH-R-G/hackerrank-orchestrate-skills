@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 560" role="img" aria-labelledby="t d">
+  <title id="t">orchestrate-kit: measure before you ship</title>
+  <desc id="d">Dark banner with a green node network, the project name, and the tagline Measure before you ship.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07100B"/>
+      <stop offset="1" stop-color="#0E2216"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.35" r="0.6">
+      <stop offset="0" stop-color="#00EA64" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#00EA64" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="#00EA64" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="560" fill="url(#bg)"/>
+  <rect width="1600" height="560" fill="url(#grid)"/>
+  <rect width="1600" height="560" fill="url(#glow)"/>
+
+  <!-- node network -->
+  <g stroke="#00EA64" stroke-opacity="0.45" stroke-width="2" fill="none">
+    <path d="M1010 120 L1120 220 L1270 170 L1390 300 L1280 400 L1120 360 L1010 470"/>
+    <path d="M1120 220 L1120 360"/>
+    <path d="M1270 170 L1280 400"/>
+    <path d="M1010 120 L1270 170"/>
+  </g>
+  <g fill="#0B1A10" stroke="#00EA64" stroke-width="3">
+    <circle cx="1010" cy="120" r="14"/>
+    <circle cx="1120" cy="220" r="20"/>
+    <circle cx="1270" cy="170" r="14"/>
+    <circle cx="1390" cy="300" r="16"/>
+    <circle cx="1280" cy="400" r="14"/>
+    <circle cx="1120" cy="360" r="20"/>
+    <circle cx="1010" cy="470" r="14"/>
+  </g>
+  <circle cx="1120" cy="220" r="8" fill="#00EA64"/>
+  <circle cx="1120" cy="360" r="8" fill="#00EA64"/>
+
+  <!-- title block -->
+  <rect x="96" y="112" width="268" height="36" rx="18" fill="#00EA64" fill-opacity="0.12" stroke="#00EA64" stroke-opacity="0.6"/>
+  <text x="121" y="136" font-family="Consolas, 'Courier New', monospace" font-size="18" fill="#7CFFB2">UNOFFICIAL · COMMUNITY</text>
+  <text x="92" y="250" font-family="'Segoe UI', Arial, sans-serif" font-size="92" font-weight="700" fill="#F2FFF6">orchestrate-kit</text>
+  <rect x="96" y="278" width="120" height="6" rx="3" fill="#00EA64"/>
+  <text x="96" y="338" font-family="'Segoe UI', Arial, sans-serif" font-size="36" fill="#C9D6CC">Measure before you ship.</text>
+  <text x="96" y="390" font-family="'Segoe UI', Arial, sans-serif" font-size="24" fill="#8FA596">Agent skills, an evaluator and an estimated scorer</text>
+  <text x="96" y="422" font-family="'Segoe UI', Arial, sans-serif" font-size="24" fill="#8FA596">for the HackerRank Orchestrate hackathon.</text>
+</svg>

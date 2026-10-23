@@ -283,6 +283,10 @@ def test_readme_image_paths_exist_and_have_alt_text():
     imgs = re.findall(r'<img [^>]*src="([^"]+)"[^>]*>', readme)
     assert len(imgs) >= 3, imgs
     for tag in re.findall(r"<img [^>]*>", readme):
+        if "divider.svg" in tag:
+            # Decorative section divider: empty alt is correct, and the image is hidden from screen readers.
+            assert 'alt=""' in tag, tag
+            continue
         assert re.search(r'alt="[^"]{10,}"', tag), tag
     for src in imgs:
         assert (ROOT / src).exists(), src

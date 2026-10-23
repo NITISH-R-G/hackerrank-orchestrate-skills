@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-labelledby="t d">
+  <title id="t">Architecture: skills, CLI, data pipeline and submission</title>
+  <desc id="d">Coding agents use eight skills and the orchestrate CLI. Data sources feed a rebuild step that writes research data and a Pages-ready site. Skills and CLI write the submission.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#00EA64"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="640" fill="#07100B"/>
+  <text x="60" y="64" font-family="'Segoe UI', Arial, sans-serif" font-size="30" font-weight="700" fill="#F2FFF6">How the pieces fit</text>
+  <text x="60" y="96" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#8FA596">Each box is a real folder or command in this repository.</text>
+
+  <!-- column 1: agents -->
+  <rect x="60" y="140" width="250" height="420" rx="16" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+  <text x="85" y="176" font-family="Consolas, monospace" font-size="16" fill="#7CFFB2">01 · AGENTS</text>
+  <rect x="85" y="200" width="200" height="64" rx="12" fill="#132519" stroke="#00EA64" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="185" y="238" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="19" fill="#F2FFF6">Claude Code</text>
+  <rect x="85" y="284" width="200" height="64" rx="12" fill="#132519" stroke="#00EA64" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="185" y="322" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="19" fill="#F2FFF6">Codex</text>
+  <rect x="85" y="368" width="200" height="64" rx="12" fill="#132519" stroke="#00EA64" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="185" y="406" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="17" fill="#F2FFF6">Cursor, Copilot, others</text>
+  <text x="85" y="478" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">Read AGENTS.md</text>
+  <text x="85" y="500" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">or the SKILL.md files</text>
+
+  <!-- column 2: skills and CLI -->
+  <rect x="380" y="140" width="330" height="200" rx="16" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+  <text x="405" y="176" font-family="Consolas, monospace" font-size="16" fill="#7CFFB2">02 · SKILLS (8)</text>
+  <text x="405" y="210" font-family="Consolas, monospace" font-size="16" fill="#C9D6CC">orchestrate · build · test-fix</text>
+  <text x="405" y="236" font-family="Consolas, monospace" font-size="16" fill="#C9D6CC">submit · interview · reference</text>
+  <text x="405" y="262" font-family="Consolas, monospace" font-size="16" fill="#C9D6CC">package · score</text>
+  <text x="405" y="306" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">skills/ · plain markdown</text>
+
+  <rect x="380" y="368" width="330" height="192" rx="16" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+  <text x="405" y="404" font-family="Consolas, monospace" font-size="16" fill="#7CFFB2">03 · orchestrate CLI</text>
+  <text x="405" y="438" font-family="Consolas, monospace" font-size="16" fill="#C9D6CC">evaluate · selftest · score</text>
+  <text x="405" y="464" font-family="Consolas, monospace" font-size="16" fill="#C9D6CC">transcript · interview</text>
+  <text x="405" y="490" font-family="Consolas, monospace" font-size="16" fill="#C9D6CC">memory · mentor · experiment</text>
+  <text x="405" y="530" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">orchestrate_kit/ · Python 3.10+</text>
+
+  <!-- column 3: data pipeline -->
+  <rect x="790" y="140" width="350" height="420" rx="16" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+  <text x="815" y="176" font-family="Consolas, monospace" font-size="16" fill="#7CFFB2">04 · DATA PIPELINE</text>
+  <rect x="815" y="200" width="300" height="64" rx="12" fill="#132519" stroke="#00EA64" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="965" y="230" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#F2FFF6">data/sources.json</text>
+  <text x="965" y="252" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">+ raw leaderboard snapshot</text>
+  <rect x="815" y="290" width="300" height="64" rx="12" fill="#132519" stroke="#00EA64" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="965" y="320" text-anchor="middle" font-family="Consolas, monospace" font-size="16" fill="#F2FFF6">build_research_data.py</text>
+  <text x="965" y="342" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">--check keeps outputs honest</text>
+  <rect x="815" y="380" width="300" height="64" rx="12" fill="#132519" stroke="#00EA64" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="965" y="410" text-anchor="middle" font-family="Consolas, monospace" font-size="16" fill="#F2FFF6">build_site.py</text>
+  <text x="965" y="432" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">site/ · not published</text>
+  <text x="815" y="500" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">Tests: python -m pytest -q</text>
+
+  <!-- arrows -->
+  <path d="M310 260 L375 240" stroke="#00EA64" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M310 316 L375 290" stroke="#00EA64" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M310 400 L375 420" stroke="#00EA64" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M710 240 L785 240" stroke="#00EA64" stroke-width="3" fill="none" stroke-dasharray="8 6" marker-end="url(#arrow)"/>
+  <path d="M710 440 L785 420" stroke="#00EA64" stroke-width="3" fill="none" stroke-dasharray="8 6" marker-end="url(#arrow)"/>
+</svg>

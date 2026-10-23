@@ -5,7 +5,8 @@
 Every terminal image is the captured stdout of a real command run in this repository.
 The site image is a headless-browser screenshot of the generated site/index.html.
 Nothing is drawn by hand, so the images cannot drift from the code without this script
-being run again. Requires Pillow (already used by the repo's tooling) and, for the site
+being run again. The designed SVG graphics (hero, features, architecture, workflow, results,
+tech-stack, divider) are hand-authored sources kept in the same folder. Requires Pillow (already used by the repo's tooling) and, for the site
 image, Microsoft Edge or Google Chrome installed locally.
 """
 
@@ -19,7 +20,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "docs" / "assets" / "readme"
+OUT = ROOT / "assets" / "readme"
 FONT_CANDIDATES = [r"C:\Windows\Fonts\consola.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"]
 
 CAPTURES = [

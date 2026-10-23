@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" role="img" aria-labelledby="t d">
+  <title id="t">Verified results: selftest, audit, tests and published score weights</title>
+  <desc id="d">Selftest caught 10 of 10 injected defects and kept 3 of 3 benign cases quiet. The audit passed 8 checks. The repository has 195 tests. The published score weights are 10, 30, 30 and 30 percent.</desc>
+  <rect width="1200" height="460" fill="#07100B"/>
+  <text x="60" y="62" font-family="'Segoe UI', Arial, sans-serif" font-size="30" font-weight="700" fill="#F2FFF6">Measured, not promised</text>
+  <text x="60" y="92" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#8FA596">Each number is printed by a command in this repository.</text>
+
+  <!-- card 1 -->
+  <g transform="translate(60 124)">
+    <rect width="250" height="150" rx="18" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+    <text x="24" y="56" font-family="'Segoe UI', Arial, sans-serif" font-size="56" font-weight="700" fill="#00EA64">10/10</text>
+    <text x="24" y="92" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#F2FFF6">injected defects caught</text>
+    <text x="24" y="122" font-family="Consolas, monospace" font-size="14" fill="#8FA596">orchestrate selftest</text>
+  </g>
+  <!-- card 2 -->
+  <g transform="translate(330 124)">
+    <rect width="250" height="150" rx="18" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+    <text x="24" y="56" font-family="'Segoe UI', Arial, sans-serif" font-size="56" font-weight="700" fill="#00EA64">3/3</text>
+    <text x="24" y="92" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#F2FFF6">benign cases left quiet</text>
+    <text x="24" y="122" font-family="Consolas, monospace" font-size="14" fill="#8FA596">orchestrate selftest</text>
+  </g>
+  <!-- card 3 -->
+  <g transform="translate(600 124)">
+    <rect width="250" height="150" rx="18" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+    <text x="24" y="56" font-family="'Segoe UI', Arial, sans-serif" font-size="56" font-weight="700" fill="#00EA64">8</text>
+    <text x="24" y="92" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#F2FFF6">audit checks passed</text>
+    <text x="24" y="122" font-family="Consolas, monospace" font-size="14" fill="#8FA596">score --audit: TRUSTWORTHY</text>
+  </g>
+  <!-- card 4 -->
+  <g transform="translate(870 124)">
+    <rect width="270" height="150" rx="18" fill="#0F1C14" stroke="#1F3A29" stroke-width="2"/>
+    <text x="24" y="56" font-family="'Segoe UI', Arial, sans-serif" font-size="56" font-weight="700" fill="#00EA64">195</text>
+    <text x="24" y="92" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#F2FFF6">tests in the repository</text>
+    <text x="24" y="122" font-family="Consolas, monospace" font-size="14" fill="#8FA596">python -m pytest -q</text>
+  </g>
+
+  <!-- weights bar -->
+  <text x="60" y="326" font-family="'Segoe UI', Arial, sans-serif" font-size="20" font-weight="700" fill="#F2FFF6">Published final-score weights</text>
+  <text x="60" y="352" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#8FA596">HackerRank blog, June 8, 2026. Final = Chat + Interview + Output CSV + Code ZIP.</text>
+  <rect x="60" y="372" width="1080" height="34" rx="17" fill="#132519"/>
+  <rect x="60" y="372" width="108" height="34" rx="17" fill="#7CFFB2"/>
+  <rect x="168" y="372" width="324" height="34" fill="#00EA64"/>
+  <rect x="492" y="372" width="324" height="34" fill="#00C853"/>
+  <rect x="816" y="372" width="324" height="34" rx="17" fill="#00A34A"/>
+  <text x="114" y="395" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#07100B">Chat 10%</text>
+  <text x="330" y="395" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#07100B">Interview 30%</text>
+  <text x="654" y="395" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#07100B">Output CSV 30%</text>
+  <text x="978" y="395" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#07100B">Code ZIP 30%</text>
+</svg>
