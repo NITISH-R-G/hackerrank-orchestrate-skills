@@ -15,6 +15,20 @@ Read this before you trust any estimated score. The point is to separate publish
 - **Sept round:** scored on `amount_safe_to_pay`, `affordability_status`, `recommended_payment_method` and `payment_plan`, `earliest_date_for_full_payment`, `spending_changes_needed`, `decision_explanation`. Weights NOT published.
 - **Balance:** every Top 10 candidate was in the top quartile on all four signals; 37 of the Top 50 were in the top quartile on all four and 11 more on three. Pairwise Spearman correlations between signals are all below 0.45 (1,349 participants).
 
+## Verified on the official September leaderboard (strongest evidence so far)
+Source: HackerRank's public leaderboard for `hackerrank-orchestrate-september26`, challenge `buy-or-wait`, page 1 (30 of 3,062 entries). Fetched during the verification on the date of this edit.
+- **Columns shown:** Chat transcript /10, AI judge interview /30, Output CSV /30, Code zip /30, Final /100.
+- **The final equals the sum of the four displayed points in all 30 rows** (max difference 0.00). So the displayed section points already include the weights: the maxima 10 + 30 + 30 + 30 add to 100.
+- **Spread in the top 30 (per section, points):** Chat 4.9 to 10.0 (mean 9.09); Interview 22.8 to 27.6 (mean 25.40); Output 12.6 to 21.9 (mean 16.40); Code 16.8 to 27.9 (mean 24.19). Output CSV has the widest spread, which matches it being the hardest section to score high on.
+- **Final range in the top 30:** 80.0 down to 72.7.
+- **Page banner bug:** the "Final Results" banner on the page showed 0.0 for the top three, while the table showed 80.0, 79.6 and 77.8. Do not use the banner.
+- **Not published on the page:** no rubric, no per-row output scoring, no interview or transcript method. The page only has the column headers.
+
+What this does and does not prove:
+- It proves the section points add to the final. It does not prove the internal weights, because the page shows only the already-weighted points.
+- It gives 30 data points from the top of the board. It says nothing about how the middle or bottom were scored.
+- A web search found no published rubric beyond the July blog, so the sub-weights in this file remain from the blog, not from the leaderboard.
+
 ## Not available (so cannot be reverse-engineered exactly)
 - The hidden golden datasets.
 - HackerRank's grader code. `code/evaluation/` in the Sept repo is empty, and the other rounds' evaluation folders contain only participant-side harnesses.
